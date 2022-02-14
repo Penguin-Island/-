@@ -9,7 +9,7 @@ module.exports = {
     mode: env,
     devtool: env === 'development' ? 'source-map' : false,
     devServer: {
-        //        watchFiles: ['src/**/*.html']
+        https: true,
     },
     entry: {
         index: './fe/index.ts',
