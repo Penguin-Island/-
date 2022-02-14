@@ -12,7 +12,7 @@ module.exports = {
 //        watchFiles: ['src/**/*.html']
     },
     entry: {
-        'index': './src/index.ts'
+        'index': './fe/index.ts'
     },
     output: {
         path: path.join(__dirname, 'dist'),
@@ -45,7 +45,7 @@ module.exports = {
             filename: 'style.css',
         }),
         new HtmlPlugin({
-            template: 'src/index.html',
+            template: 'fe/index.html',
             filename: 'index.html'
         }),
         // new CopyPlugin({
