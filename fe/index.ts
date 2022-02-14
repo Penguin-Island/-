@@ -1,5 +1,5 @@
 'use strict';
-import './style.scss'
+import './style.scss';
 
 export function plus(a, b) {
     return a + b;
