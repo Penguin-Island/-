@@ -9,7 +9,8 @@
         "prod": "webpack --mode=production",
         "start": "webpack-dev-server",
         "serve": "npm run start",
-        "server": "npm run start"
+        "server": "npm run start",
+        "fmt": "prettier --write ."
     },
     "author": "",
     "license": "UNLICENSED",

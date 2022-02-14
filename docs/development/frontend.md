@@ -76,5 +76,5 @@ $ npm test
 コミットする前に以下のコマンドを実行し、コードのフォーマットを整えてください。
 
 ```shell
-$ npx prettier --write .
+$ npm run fmt
 ```
