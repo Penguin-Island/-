@@ -8,9 +8,6 @@ const env = process.env.NODE_ENV || 'development';
 module.exports = {
     mode: env,
     devtool: env === 'development' ? 'source-map' : false,
-    devServer: {
-        https: true,
-    },
     entry: {
         index: './fe/index.ts',
     },
