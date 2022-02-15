@@ -116,5 +116,14 @@ func Run() {
 		sess.Save()
 	})
 
-	r.Run("0.0.0.0:8000")
+	if err := r.Run("0.0.0.0:8000"); err != nil {
+		if !isFlagEnabled(os.Args[1:], "release") {
+			log.Println(err)
+			log.Println("fallback to :1333")
+
+			r.Run("0.0.0.0:1333")
+		} else {
+			log.Fatal(err)
+		}
+	}
 }
