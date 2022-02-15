@@ -41,19 +41,9 @@ $ npm install
 $ npm run start
 ```
 
-これを実行すると、5 行目くらいに以下のようなメッセージが出てきます。
-
-```plaintext
-<i> [webpack-dev-server] Project is running at:
-<i> [webpack-dev-server] Loopback: http://localhost:8080/
-<i> [webpack-dev-server] On Your Network (IPv4): http://192.0.2.2:8080/
-```
-
-この出力の `Loopback` の行に表示されている URL (`http://localhost:8080/`) をブラウザのアドレス欄に入れると
-書いたコードがブラウザ上で実行されます。
-
-スマートフォンなどから動作を確認したい場合は、その下の行の `On Your Network` の行の URL をスマホのブラウザの
-アドレス欄に入れてください。
+その後、ブラウザから `http://localhost:8000/` にアクセスしてください。
+webpack が違う URL の表示を出しますが、この URL にアクセスするとバックエンドのサーバに接続できないので
+注意してください。
 
 ファイルを保存するとブラウザのリロードは自動で行われます。
 ただ、問題が生じる可能性もなくはないのでおかしいと思ったらブラウザをリロードしてみてください。
