@@ -7,7 +7,10 @@ import (
 	"os"
 	"os/exec"
 
+	"github.com/gin-contrib/sessions"
+	"github.com/gin-contrib/sessions/memcached"
 	"github.com/gin-gonic/gin"
+	"github.com/memcachier/mc"
 	log "github.com/sirupsen/logrus"
 )
 
@@ -71,6 +74,10 @@ func Run() {
 
 	r := gin.Default()
 
+	client := mc.NewMC("localhost:11211", "", "")
+	store := memcached.NewMemcacheStore(client, "", []byte(""))
+	r.Use(sessions.Sessions("session", store))
+
 	if isFlagEnabled(os.Args[1:], "noproxy") {
 		r.SetTrustedProxies([]string{})
 		if err := launchWebpackServer(); err != nil {
@@ -80,6 +87,21 @@ func Run() {
 	} else {
 		r.SetTrustedProxies([]string{"127.0.0.1"})
 	}
+
+	r.GET("/hoge", func(c *gin.Context) {
+		sess := sessions.Default(c)
+		var count int
+		v := sess.Get("count")
+		if v == nil {
+			count = 0
+		} else {
+			count = v.(int)
+			fmt.Println(count)
+			count++
+		}
+		sess.Set("count", count)
+		sess.Save()
+	})
 
 	r.Run("0.0.0.0:8000")
 }
