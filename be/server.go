@@ -12,6 +12,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/memcachier/mc"
 	log "github.com/sirupsen/logrus"
+	"gorm.io/driver/postgres"
+	"gorm.io/gorm"
 )
 
 func isFlagEnabled(flags []string, key string) bool {
@@ -63,6 +65,11 @@ func forwardToWebpack(c *gin.Context) {
 	io.Copy(c.Writer, resp.Body)
 }
 
+func initDatabase() (*gorm.DB, error) {
+	dsn := "host=localhost user=postgres password= dbname=ohatori port=5432 sslmode=disable TimeZone=Asia/Tokyo"
+	return gorm.Open(postgres.Open(dsn), &gorm.Config{})
+}
+
 func Run() {
 	if isFlagEnabled(os.Args[1:], "release") {
 		gin.SetMode(gin.ReleaseMode)
@@ -71,6 +78,12 @@ func Run() {
 	}
 
 	log.SetReportCaller(true)
+
+	db, err := initDatabase()
+	if err != nil {
+		log.Fatal(err)
+	}
+	_ = db
 
 	r := gin.Default()
 

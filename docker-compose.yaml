@@ -4,3 +4,9 @@ services:
     image: 'memcached:alpine'
     ports:
       - '11211:11211'
+  postgres:
+    image: 'postgres:alpine'
+    ports:
+      - '5432:5432'
+    environment:
+      - 'POSTGRES_HOST_AUTH_METHOD=trust'
