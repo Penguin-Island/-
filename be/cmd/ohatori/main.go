@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/Penguin-Island/kinnikunyan/be"
+	"github.com/Penguin-Island/ohatori/be"
 )
 
 func main() {
