@@ -6,12 +6,15 @@
 
 ## 実行
 
-実行するには `be/cmd/ohatori` 内で `go run` を実行します:
+開発用にサーバを起動するにはターミナルで以下のコマンドを実行します:
 
 ```shell
-$ cd be/cmd/ohatori
-$ go run .
+$ npm run start
 ```
+
+その後 `http://localhost:8000/` にアクセスしてください (別の URL が表示されますが、無視してください)。
+
+サーバを止めるにはターミナルの画面で Control+C を押します。
 
 ## テスト
 
