@@ -1,6 +1,4 @@
 'use strict';
 import './style.scss';
 
-addEventListener('load', function (ev) {
-    
-});
+addEventListener('load', function (ev) {});
