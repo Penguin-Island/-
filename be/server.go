@@ -16,6 +16,12 @@ import (
 	"gorm.io/gorm"
 )
 
+type Member struct {
+	UserId   int `gorm:"primary_key"`
+	UserName string
+	Password string
+}
+
 func isFlagEnabled(flags []string, key string) bool {
 	for _, k := range flags {
 		if k == key {
@@ -83,7 +89,8 @@ func Run() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	_ = db
+
+	db.AutoMigrate(&Member{})
 
 	r := gin.Default()
 
