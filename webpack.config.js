@@ -10,10 +10,15 @@ module.exports = {
     devtool: env === 'development' ? 'source-map' : false,
     entry: {
         index: './fe/index.ts',
+        register: './fe/register.ts',
+        top: './fe/top.ts',
+        friends: './fe/friends.ts',
+        game: './fe/game.ts',
+        finish: './fe/finish.ts',
     },
     output: {
         path: path.join(__dirname, 'dist'),
-        filename: '[name]-[hash].js',
+        filename: 'js/[name]-[hash].js',
         clean: true,
     },
     module: {
@@ -34,11 +39,37 @@ module.exports = {
     },
     plugins: [
         new MiniCssExtractPlugin({
-            filename: 'style.css',
+            filename: 'css/style.css',
         }),
         new HtmlPlugin({
             template: 'fe/index.html',
             filename: 'index.html',
+            chunks: ['index'],
+        }),
+        new HtmlPlugin({
+            template: 'fe/register.html',
+            filename: 'register/index.html',
+            chunks: ['register'],
+        }),
+        new HtmlPlugin({
+            template: 'fe/top.html',
+            filename: 'top/index.html',
+            chunks: ['top'],
+        }),
+        new HtmlPlugin({
+            template: 'fe/friends.html',
+            filename: 'friends/index.html',
+            chunks: ['friends'],
+        }),
+        new HtmlPlugin({
+            template: 'fe/game.html',
+            filename: 'game/index.html',
+            chunks: ['game'],
+        }),
+        new HtmlPlugin({
+            template: 'fe/finish.html',
+            filename: 'finish/index.html',
+            chunks: ['finish'],
         }),
         // new CopyPlugin({
         //     patterns: [
