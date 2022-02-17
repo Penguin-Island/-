@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Penguin-Island/ohatori/be/shiritori"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/gorilla/websocket"
@@ -108,16 +109,6 @@ func (s *GameState) notifyToEveryone(n InternalNotification) {
 	defer s.mu.Unlock()
 }
 
-func isShiritoriSuccess(prevWord, curWord string) bool {
-	if len(curWord) == 0 {
-		return false
-	}
-	if []rune(curWord)[len([]rune(curWord))-1] == 'ん' {
-		return false
-	}
-	return []rune(prevWord)[len([]rune(prevWord))-1] == []rune(curWord)[0]
-}
-
 // ゲーム全体の進行を管理する
 func manageGame(state *GameState) {
 	time.Sleep(time.Second)
@@ -171,7 +162,7 @@ func manageGame(state *GameState) {
 					log.Warn("Recieved from non-turn user")
 					break
 				}
-				if isShiritoriSuccess(prevWord, noti.SendWord.Word) {
+				if shiritori.IsValidShiritori(prevWord, noti.SendWord.Word) {
 					// 成功
 					prevWord = noti.SendWord.Word
 					turnIndex = (turnIndex + 1) % len(state.users)
