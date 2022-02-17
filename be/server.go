@@ -133,16 +133,16 @@ func Run() {
 			c.Redirect(http.StatusFound, "/")
 			return
 		}
-			member.UserName = c.PostForm("username")
+		member.UserName = c.PostForm("username")
 
-			hashed, err := bcrypt.GenerateFromPassword([]byte(c.PostForm("password")), bcrypt.DefaultCost)
-			if err != nil {
-				c.Status(http.StatusInternalServerError)
-				return
-			}
-			member.Password = string(hashed)
-			db.Create(&member)
-		
+		hashed, err := bcrypt.GenerateFromPassword([]byte(c.PostForm("password")), bcrypt.DefaultCost)
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+		member.Password = string(hashed)
+		db.Create(&member)
+
 	})
 
 	if err := r.Run("0.0.0.0:8000"); err != nil {
