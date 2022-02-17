@@ -12,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/memcachier/mc"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -128,10 +129,21 @@ func Run() {
 
 		member := Member{}
 
-		member.UserName = c.PostForm("username")
-		member.Password = c.PostForm("password")
+		if len(c.PostForm("username")) < 3 && len(c.PostForm("password")) < 10 {
+			c.Redirect(http.StatusFound, "/")
+			return
+		} else {
+			member.UserName = "username"
 
-		db.Create(&member)
+			hashed, err := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.DefaultCost)
+			if err != nil {
+				c.Status(http.StatusInternalServerError)
+				return
+			} else {
+			}
+			member.Password = string(hashed)
+			db.Create(&member)
+		}
 	})
 
 	if err := r.Run("0.0.0.0:8000"); err != nil {
