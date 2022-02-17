@@ -132,18 +132,17 @@ func Run() {
 		if len(c.PostForm("username")) < 3 && len(c.PostForm("password")) < 10 {
 			c.Redirect(http.StatusFound, "/")
 			return
-		} else {
-			member.UserName = "username"
+		}
+			member.UserName = c.PostForm("username")
 
-			hashed, err := bcrypt.GenerateFromPassword([]byte("password"), bcrypt.DefaultCost)
+			hashed, err := bcrypt.GenerateFromPassword([]byte(c.PostForm("password")), bcrypt.DefaultCost)
 			if err != nil {
 				c.Status(http.StatusInternalServerError)
 				return
-			} else {
 			}
 			member.Password = string(hashed)
 			db.Create(&member)
-		}
+		
 	})
 
 	if err := r.Run("0.0.0.0:8000"); err != nil {
