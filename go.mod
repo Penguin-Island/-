@@ -5,8 +5,11 @@ go 1.17
 require (
 	github.com/gin-contrib/sessions v0.0.4
 	github.com/gin-gonic/gin v1.7.7
+	github.com/gorilla/websocket v1.5.0
 	github.com/memcachier/mc v2.0.1+incompatible
 	github.com/sirupsen/logrus v1.8.1
+	gorm.io/driver/postgres v1.2.3
+	gorm.io/gorm v1.22.5
 )
 
 require (
@@ -40,6 +43,4 @@ require (
 	golang.org/x/sys v0.0.0-20210615035016-665e8c7367d1 // indirect
 	golang.org/x/text v0.3.7 // indirect
 	gopkg.in/yaml.v2 v2.2.8 // indirect
-	gorm.io/driver/postgres v1.2.3 // indirect
-	gorm.io/gorm v1.22.5 // indirect
 )

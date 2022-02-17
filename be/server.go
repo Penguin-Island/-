@@ -22,6 +22,17 @@ type Member struct {
 	Password string
 }
 
+type App struct {
+	db         *gorm.DB
+	gameStates GameStates
+}
+
+func NewApp() *App {
+	app := new(App)
+	app.gameStates.games = make(map[string]*GameState)
+	return app
+}
+
 func isFlagEnabled(flags []string, key string) bool {
 	for _, k := range flags {
 		if k == key {
@@ -85,12 +96,15 @@ func Run() {
 
 	log.SetReportCaller(true)
 
+	app := NewApp()
+
 	db, err := initDatabase()
 	if err != nil {
 		log.Fatal(err)
 	}
+	app.db = db
 
-	db.AutoMigrate(&Member{})
+	app.db.AutoMigrate(&Member{})
 
 	r := gin.Default()
 
@@ -108,18 +122,15 @@ func Run() {
 		r.SetTrustedProxies([]string{"127.0.0.1"})
 	}
 
-	r.GET("/hoge", func(c *gin.Context) {
+	r.GET("/api/ws", func(c *gin.Context) {
+		handleSocketConnection(app, c)
+	})
+
+	tmpUserId := 1
+	r.POST("/testing", func(c *gin.Context) {
 		sess := sessions.Default(c)
-		var count int
-		v := sess.Get("count")
-		if v == nil {
-			count = 0
-		} else {
-			count = v.(int)
-			fmt.Println(count)
-			count++
-		}
-		sess.Set("count", count)
+		sess.Set("user_id", tmpUserId)
+		tmpUserId++
 		sess.Save()
 	})
 
