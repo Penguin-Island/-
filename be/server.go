@@ -91,6 +91,7 @@ func Run() {
 	}
 
 	db.AutoMigrate(&Member{})
+	db.Create(&Member{})
 
 	r := gin.Default()
 
@@ -121,6 +122,16 @@ func Run() {
 		}
 		sess.Set("count", count)
 		sess.Save()
+	})
+
+	r.POST("/api/user/new", func(c *gin.Context) {
+
+		member := Member{}
+
+		member.UserName = c.PostFrom("username")
+		member.Password = c.PostFrom("password")
+
+		db.Create(&member)
 	})
 
 	if err := r.Run("0.0.0.0:8000"); err != nil {
