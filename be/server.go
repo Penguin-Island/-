@@ -128,8 +128,8 @@ func Run() {
 
 		member := Member{}
 
-		member.UserName = c.PostFrom("username")
-		member.Password = c.PostFrom("password")
+		member.UserName = c.PostForm("username")
+		member.Password = c.PostForm("password")
 
 		db.Create(&member)
 	})
