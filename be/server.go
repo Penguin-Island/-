@@ -129,7 +129,7 @@ func Run() {
 
 		member := Member{}
 
-		if len(c.PostForm("username")) < 3 && len(c.PostForm("password")) < 10 {
+		if len(c.PostForm("username")) < 3 || len(c.PostForm("password")) < 10 {
 			c.Redirect(http.StatusFound, "/")
 			return
 		}
