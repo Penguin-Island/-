@@ -12,6 +12,7 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/memcachier/mc"
 	log "github.com/sirupsen/logrus"
+	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -132,6 +133,24 @@ func Run() {
 		sess.Set("user_id", tmpUserId)
 		tmpUserId++
 		sess.Save()
+	})
+
+	r.POST("/api/user/new", func(c *gin.Context) {
+		member := Member{}
+
+		if len(c.PostForm("username")) < 3 || len(c.PostForm("password")) < 10 {
+			c.Redirect(http.StatusFound, "/")
+			return
+		}
+		member.UserName = c.PostForm("username")
+
+		hashed, err := bcrypt.GenerateFromPassword([]byte(c.PostForm("password")), bcrypt.DefaultCost)
+		if err != nil {
+			c.Status(http.StatusInternalServerError)
+			return
+		}
+		member.Password = string(hashed)
+		db.Create(&member)
 	})
 
 	if err := r.Run("0.0.0.0:8000"); err != nil {
