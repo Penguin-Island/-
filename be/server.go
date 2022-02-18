@@ -3,9 +3,12 @@ package be
 import (
 	"fmt"
 	"io"
+	"math/rand"
 	"net/http"
 	"os"
 	"os/exec"
+	"strconv"
+	"time"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/memcached"
@@ -18,9 +21,10 @@ import (
 )
 
 type Member struct {
-	UserId   int `gorm:"primary_key"`
-	UserName string
-	Password string
+	gorm.Model
+	PlayerTag string `gorm:"unique"`
+	UserName  string
+	Password  string
 }
 
 type App struct {
@@ -83,9 +87,20 @@ func forwardToWebpack(c *gin.Context) {
 	io.Copy(c.Writer, resp.Body)
 }
 
+func generatePlayerTag(userName string) string {
+	return userName + strconv.Itoa(rand.Intn(8999)+1000)
+}
+
 func initDatabase() (*gorm.DB, error) {
 	dsn := "host=localhost user=postgres password= dbname=ohatori port=5432 sslmode=disable TimeZone=Asia/Tokyo"
-	return gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	if err != nil {
+		return nil, err
+	}
+
+	db.AutoMigrate(&Member{})
+
+	return db, nil
 }
 
 func Run() {
@@ -105,7 +120,7 @@ func Run() {
 	}
 	app.db = db
 
-	app.db.AutoMigrate(&Member{})
+	rand.Seed(time.Now().Unix())
 
 	r := gin.Default()
 
@@ -136,21 +151,34 @@ func Run() {
 	})
 
 	r.POST("/api/user/new", func(c *gin.Context) {
-		member := Member{}
+		userName := c.PostForm("username")
+		password := c.PostForm("password")
 
-		if len(c.PostForm("username")) < 3 || len(c.PostForm("password")) < 10 {
-			c.Redirect(http.StatusFound, "/")
+		if len(userName) < 3 || len(password) < 10 {
+			c.Redirect(http.StatusFound, "/register/")
 			return
 		}
-		member.UserName = c.PostForm("username")
-
 		hashed, err := bcrypt.GenerateFromPassword([]byte(c.PostForm("password")), bcrypt.DefaultCost)
 		if err != nil {
 			c.Status(http.StatusInternalServerError)
 			return
 		}
-		member.Password = string(hashed)
-		db.Create(&member)
+
+		member := Member{
+			PlayerTag: generatePlayerTag(userName),
+			UserName:  userName,
+			Password:  string(hashed),
+		}
+		for i := 0; i < 10; i++ {
+			if err := db.Create(&member).Error; err != nil {
+				log.Println(err)
+				member.PlayerTag = generatePlayerTag(userName)
+				continue
+			}
+			break
+		}
+
+		c.Redirect(http.StatusFound, "/top/")
 	})
 
 	if err := r.Run("0.0.0.0:8000"); err != nil {
