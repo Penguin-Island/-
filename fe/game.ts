@@ -19,9 +19,7 @@ addEventListener('load', () => {
             document.getElementById('prevWord').innerText = data['data']['prevAnswer'];
 
             const yourTurn = data['data']['yourTurn'];
-            document
-                .getElementById('yourTurn')
-                .setAttribute('data-your-turn', yourTurn ? 'yes' : 'no');
+            document.getElementById('turn').innerText = yourTurn ? 'あなたの番' : '相手の番';
             (document.getElementById('send') as HTMLInputElement).disabled = !yourTurn;
             (document.getElementById('wordInput') as HTMLInputElement).disabled = !yourTurn;
         } else if (data['type'] == 'onTick') {
