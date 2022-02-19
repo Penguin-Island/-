@@ -8,7 +8,34 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+func isValidUserName(userName string) bool {
+	for _, r := range []rune(userName) {
+		if !('a' <= r && r <= 'z') && !('A' <= r && r <= 'Z') && !('0' <= r && r <= '9') && ( r != '_' ) && ( r != '-') {
+			return false
+		}
+	}
+	return true
+}
+
+func isValidPassword(password string) bool {
+	hasAlpha := false
+	hasDigit := false
+	for _, r := range []rune(password) {
+		if ('a' <= r && r <= 'z') || ('A' <= r && r <= 'Z') {
+			hasAlpha = true
+		} else if '0' <= r && r <= '9' {
+			hasDigit = true
+		}
+	}
+	return hasAlpha && hasDigit
+}
+
 func registerUser(app *App, userName, password string) (bool, error) {
+	if !(isValidUserName(userName) && isValidPassword(password)) {
+		return false, nil
+	}
+
+
 	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return false, err
