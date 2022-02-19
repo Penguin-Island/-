@@ -15,7 +15,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/memcachier/mc"
 	log "github.com/sirupsen/logrus"
-	"golang.org/x/crypto/bcrypt"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 )
@@ -153,34 +152,7 @@ func Run() {
 	})
 
 	r.POST("/api/user/new", func(c *gin.Context) {
-		userName := c.PostForm("username")
-		password := c.PostForm("password")
-
-		if len(userName) < 3 || len(password) < 10 {
-			c.Redirect(http.StatusFound, "/register/")
-			return
-		}
-		hashed, err := bcrypt.GenerateFromPassword([]byte(c.PostForm("password")), bcrypt.DefaultCost)
-		if err != nil {
-			c.Status(http.StatusInternalServerError)
-			return
-		}
-
-		member := Member{
-			PlayerTag: generatePlayerTag(userName),
-			UserName:  userName,
-			Password:  string(hashed),
-		}
-		for i := 0; i < 10; i++ {
-			if err := db.Create(&member).Error; err != nil {
-				log.Println(err)
-				member.PlayerTag = generatePlayerTag(userName)
-				continue
-			}
-			break
-		}
-
-		c.Redirect(http.StatusFound, "/top/")
+		handleRegisterUser(app, c)
 	})
 
 	if err := r.Run("0.0.0.0:8000"); err != nil {

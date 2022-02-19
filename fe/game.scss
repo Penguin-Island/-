@@ -130,6 +130,7 @@ body {
             border: none;
             outline: none;
             padding: 10px 50px;
+            transition: background-color $animation-duration;
 
             &:hover {
                 background-color: lighten($button-color, 10%);

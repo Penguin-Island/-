@@ -25,6 +25,18 @@ jobs:
           npm run prod
   backend:
     runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: 'postgres:alpine'
+        ports:
+          - '5432:5432'
+        env:
+          POSTGRES_HOST_AUTH_METHOD: trust
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
@@ -40,3 +52,6 @@ jobs:
       - name: Run test
         run: |
           go test ./...
+        env:
+          POSTGRES_HOST: postgres
+          POSTGRES_PORT: 5432
