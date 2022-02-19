@@ -33,6 +33,68 @@ func init() {
 	db = gormDB
 }
 
+func Test_isValidUserName(t *testing.T) {
+	testcases := []struct {
+		name   string
+		input  string
+		result bool
+	}{
+		{
+			name:   "less characters",
+			input:  "ta",
+			result: false,
+		},
+		{
+			name:   "only small",
+			input:  "taro",
+			result: true,
+		},
+		{
+			name:   "only capital",
+			input:  "TARO",
+			result: true,
+		},
+		{
+			name:   "use symbol1",
+			input:  "ta-ro",
+			result: true,
+		},
+		{
+			name:   "use symbol2",
+			input:  "ta_ro",
+			result: true,
+		},
+		{
+			name:   "use invalid symbol",
+			input:  "taro!",
+			result: false,
+		},
+		{
+			name:   "use numbers",
+			input:  "1234",
+			result: true,
+		},
+		{
+			name:   "use characters and numbers",
+			input:  "taro1",
+			result: true,
+		},
+		{
+			name:   "use ",
+			input:  "たろう",
+			result: false,
+		},
+	}
+	for _, testcase := range testcases {
+		t.Run(testcase.name, func(t *testing.T) {
+			result := isValidUserName(testcase.input)
+			if result != testcase.result {
+				t.Errorf("Unexpected result for %s: expected=%v, actual=%v\n", testcase.input, testcase.result, result)
+			}
+		})
+	}
+}
+
 func Test_registerUser(t *testing.T) {
 	if db == nil {
 		t.Skip()
