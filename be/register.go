@@ -9,6 +9,10 @@ import (
 )
 
 func isValidUserName(userName string) bool {
+	if len(userName) < 3 {
+		return false
+	}
+
 	for _, r := range []rune(userName) {
 		if !('a' <= r && r <= 'z') && !('A' <= r && r <= 'Z') && !('0' <= r && r <= '9') && (r != '_') && (r != '-') {
 			return false
@@ -18,6 +22,10 @@ func isValidUserName(userName string) bool {
 }
 
 func isValidPassword(password string) bool {
+	if len(password) < 10 {
+		return false
+	}
+
 	hasAlpha := false
 	hasDigit := false
 	for _, r := range []rune(password) {
@@ -63,11 +71,6 @@ func registerUser(app *App, userName, password string) (bool, error) {
 func handleRegisterUser(app *App, c *gin.Context) {
 	userName := c.PostForm("username")
 	password := c.PostForm("password")
-
-	if len(userName) < 3 || len(password) < 10 {
-		c.Redirect(http.StatusFound, "/register/")
-		return
-	}
 
 	if acceptable, err := registerUser(app, userName, password); !acceptable {
 		c.Redirect(http.StatusFound, "/register/")
