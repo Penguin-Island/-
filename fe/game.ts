@@ -43,6 +43,25 @@ addEventListener('load', () => {
         }
     });
 
+    document.getElementById('wordInput').addEventListener('input', (event) => {
+        const ev = event as InputEvent;
+        if (ev.isComposing) {
+            return;
+        }
+        const inputElement = ev.target as HTMLInputElement;
+        const str = inputElement.value;
+        const resultStr = [];
+        for (let i = 0; i < str.length; i++) {
+            const cc = str.charCodeAt(i);
+            if ((0x3041 <= cc && cc <= 0x3096) || cc == 0x30fc) {
+                resultStr.push(cc);
+            } else if (0x30a1 <= cc && cc <= 0x30f6) {
+                resultStr.push(cc - 96);
+            }
+        }
+        inputElement.value = String.fromCharCode(...resultStr);
+    });
+
     document.getElementById('send').addEventListener('click', (ev) => {
         ev.preventDefault();
 
