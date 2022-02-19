@@ -17,6 +17,8 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+
+	"golang.org/x/crypto/bcrypt"
 )
 
 type Member struct {
@@ -153,6 +155,26 @@ func Run() {
 
 	r.POST("/api/user/new", func(c *gin.Context) {
 		handleRegisterUser(app, c)
+	})
+
+	r.POST("/api/login", func(c *gin.Context) {
+		var member Member
+		playerTag := c.PostForm("playerTag")
+		password := c.PostForm("password")
+		if err := db.First(&member, "player_tag = ?", playerTag).Error; err != nil {
+			log.Error(err)
+			c.Redirect(http.StatusFound, "/")
+			return
+		}
+		if err := bcrypt.CompareHashAndPassword([]byte(member.Password), []byte(password)); err != nil {
+			log.Error(err)
+			c.Redirect(http.StatusFound, "/")
+			return
+		}
+		sess := sessions.Default(c)
+		sess.Set("user_id", member.ID)
+		sess.Save()
+		c.Redirect(http.StatusFound, "/game/")
 	})
 
 	if err := r.Run("0.0.0.0:8000"); err != nil {
