@@ -65,10 +65,8 @@ module.exports = {
             filename: 'finish/index.html',
             chunks: ['finish'],
         }),
-        // new CopyPlugin({
-        //     patterns: [
-        //         {from: 'src/index.html', to: path.join(__dirname, 'dist')}
-        //     ]
-        // })
+        new CopyPlugin({
+            patterns: [{from: 'fe/assets/ryugen.mp3', to: path.join(__dirname, 'dist/assets')}],
+        }),
     ],
 };
