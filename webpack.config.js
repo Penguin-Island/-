@@ -66,7 +66,12 @@ module.exports = {
             chunks: ['finish'],
         }),
         new CopyPlugin({
-            patterns: [{from: 'fe/assets/ryugen.mp3', to: path.join(__dirname, 'dist/assets')}],
+            patterns: [
+                {from: 'fe/assets/ryugen.mp3', to: path.join(__dirname, 'dist/assets')},
+                {from: 'fe/assets/turn.mp3', to: path.join(__dirname, 'dist/assets')},
+                {from: 'fe/assets/start.mp3', to: path.join(__dirname, 'dist/assets')},
+                {from: 'fe/assets/alarm.mp3', to: path.join(__dirname, 'dist/assets')},
+            ],
         }),
     ],
 };

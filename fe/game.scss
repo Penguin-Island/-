@@ -7,6 +7,47 @@ body {
     padding: 0;
 }
 
+.alert {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: #ff3e30;
+    width: 100vw;
+    font-size: 25px;
+    display: flex;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity $animation-duration;
+
+    &[data-activated='yes'] {
+        pointer-events: auto;
+        opacity: 1;
+    }
+
+    .alert-message {
+        flex: 1;
+        padding: 10px;
+    }
+
+    .close-container {
+        padding: 10px;
+        flex-basis: fit-content;
+        .close-button {
+            background-color: transparent;
+            border: none;
+            border-radius: 100%;
+            padding: 5px 10px;
+
+            &:hover {
+                background-color: rgba(255, 255, 255, 0.1);
+            }
+            &:active {
+                background-color: rgba(0, 0, 0, 0.05);
+            }
+        }
+    }
+}
+
 .top {
     display: none;
 
@@ -71,6 +112,16 @@ body {
             color: white;
             font-size: 45px;
             padding: 10px 20px;
+
+            &:hover {
+                background-color: lighten($background-color, 10%);
+            }
+            &:active {
+                background-color: darken($background-color, 5%);
+            }
+            &:disabled {
+                background-color: desaturate($background-color, 100%);
+            }
         }
     }
 }
