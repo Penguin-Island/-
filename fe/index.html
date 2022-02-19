@@ -6,22 +6,30 @@
         <meta name="viewport" content="width=device-width" />
     </head>
     <body>
-        <h1><font color="red">おはトリ</font></h1>
-        <p>ID</p>
-        <form action="" method="post">
-            <input type="text" />
-        </form>
-        <p>パスワード</p>
-        <form action="" method="post">
-            <input type="password" />
-        </form>
-        <br />
-        <br />
-        <form action="" method="post">
+        <form action="/api/login" method="post">
+            <div class="h1">
+                <h1>おはトリ</h1>
+            </div>
+            <div class="id">
+                <label for="id">ID</label>
+            </div>
+            <div class="text">
+                <input type="text" name="id" id="id" />
+            </div>
+            <div class="password">
+                <label for="password">パスワード</label>
+            </div>
+            <div class="pass">
+                <input type="password" name="password" id="password" />
+            </div>
+            <br />
+            <br />
             <button type="submit">ログイン</button>
+            <br />
+            <br />
+            <div class="a">
+                <a href="./register.html">新規登録＞</a>
+            </div>
         </form>
-        <br />
-        <br />
-        <a href="">新規登録＞</a>
     </body>
 </html>

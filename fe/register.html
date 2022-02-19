@@ -5,5 +5,26 @@
         <meta charset="utf-8" />
         <meta name="viewport" content="width=device-width" />
     </head>
-    <body></body>
+    <body>
+        <form action="/api/login" method="post">
+            <div class="h1">
+                <h1>おはトリ</h1>
+            </div>
+            <div class="name">
+                <label for="name">なまえ</label>
+            </div>
+            <div class="text2">
+                <input type="text" name="name" id="name" />
+            </div>
+            <div class="password2">
+                <label for="password">パスワード</label>
+            </div>
+            <div class="pass2">
+                <input type="password" name="password" id="password" />
+            </div>
+            <br />
+            <br />
+            <button type="submit">新規登録</button>
+        </form>
+    </body>
 </html>
