@@ -1,14 +1,40 @@
 <!DOCTYPE html>
 <html>
+    <head>
+        <meta charset="utf-8" />
+        <title>ゲーム</title>
+        <meta name="viewport" content="width=device-width" />
+    </head>
     <body>
-        Prev Word: <span id="prevWord"></span><br />
-        Your Turn: <span id="yourTurn"></span><br />
-        Waiting Retry: <span id="waitingRetry"></span><br />
-        Finished: <span id="finished"></span><br />
-        Remain: <span id="remain"></span><br />
-        Turn: <span id="turnRemain"></span><br />
-        <input type="text" id="wordInput" />
-        <input type="button" value="Send Word" id="send" />
-        <input type="button" value="Confirm Retry" id="confirmRetry" />
+        <div class="count-down" id="countDown">299</div>
+        <div class="prev-word" id="prevWord">おはよう</div>
+        <div class="turn-info-container">
+            <div class="your-turn" id="yourTurn">あなたの番</div>
+            <div class="turn-count-down">
+                <span class="game-turn-count-down" id="turnCountDown"></span>秒
+            </div>
+        </div>
+        <form>
+            <div class="send-field-container">
+                <div class="word-input">
+                    <input type="text" id="wordInput" />
+                </div>
+                <div class="word-send">
+                    <button type="submit" id="send">送</button>
+                </div>
+            </div>
+        </form>
+
+        <div class="overlay failure" id="failureOverlay">
+            <div class="message">
+                <span>起床</span>
+                <span>失敗</span>
+            </div>
+            <div class="confirm-retry">
+                <button type="button" id="confirmRetry">リトライ</button>
+            </div>
+        </div>
+
+        <div class="overlay finish" id="finishOverlay">終了</div>
     </body>
 </html>
