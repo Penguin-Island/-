@@ -6,35 +6,65 @@
         <meta name="viewport" content="width=device-width" />
     </head>
     <body>
-        <div class="count-down" id="countDown"></div>
-        <div class="prev-word" id="prevWord"></div>
-        <div class="turn-info-container">
-            <div class="your-turn" id="turn"></div>
-            <div class="turn-count-down">
-                <span class="game-turn-count-down" id="turnCountDown"></span>秒
-            </div>
-        </div>
-        <form>
-            <div class="send-field-container">
-                <div class="word-input">
-                    <input type="text" id="wordInput" />
+        <div id="top" class="top" data-activated="yes">
+            <div class="top-bar">
+                <div class="player-info">
+                    <span id="playerName">hoge</span>
+                    <span class="player-id"> ID: <span id="playerId">hoge1234</span> </span>
                 </div>
-                <div class="word-send">
-                    <button type="submit" id="send">送</button>
+                <div class="top-control">
+                    <a href="/api/logout">ログアウト</a>
                 </div>
             </div>
-        </form>
 
-        <div class="overlay failure" id="failureOverlay">
-            <div class="message">
-                <span>起床</span>
-                <span>失敗</span>
+            <div class="main-content">
+                目標時間
+                <div class="start-time">07:45</div>
+                フレンド
+                <div class="friend-name">未設定</div>
+
+                <div class="success-rate-container">
+                    起床成功率
+                    <span class="success-rate">75</span>%
+                </div>
             </div>
-            <div class="confirm-retry">
-                <button type="button" id="confirmRetry">リトライ</button>
+
+            <div class="start-button-container">
+                <button type="button" class="start-button" id="startGame">しりとり開始</button>
             </div>
         </div>
 
-        <div class="overlay finish" id="finishOverlay">終了</div>
+        <div class="game" id="game">
+            <div class="count-down" id="countDown"></div>
+            <div class="prev-word" id="prevWord"></div>
+            <div class="turn-info-container">
+                <div class="your-turn" id="turn"></div>
+                <div class="turn-count-down">
+                    <span class="game-turn-count-down" id="turnCountDown"></span>秒
+                </div>
+            </div>
+            <form>
+                <div class="send-field-container">
+                    <div class="word-input">
+                        <input type="text" id="wordInput" />
+                    </div>
+                    <div class="word-send">
+                        <button type="submit" id="send">送</button>
+                    </div>
+                </div>
+            </form>
+
+            <div class="overlay failure" id="failureOverlay">
+                <div class="message">
+                    <span>起床</span>
+                    <span>失敗</span>
+                </div>
+                <div class="confirm-retry">
+                    <button type="button" id="confirmRetry">リトライ</button>
+                </div>
+            </div>
+
+            <div class="overlay finish" id="finishOverlay">終了</div>
+        </div>
     </body>
 </html>
