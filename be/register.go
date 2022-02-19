@@ -10,7 +10,7 @@ import (
 
 func isValidUserName(userName string) bool {
 	for _, r := range []rune(userName) {
-		if !('a' <= r && r <= 'z') && !('A' <= r && r <= 'Z') && !('0' <= r && r <= '9') && ( r != '_' ) && ( r != '-') {
+		if !('a' <= r && r <= 'z') && !('A' <= r && r <= 'Z') && !('0' <= r && r <= '9') && (r != '_') && (r != '-') {
 			return false
 		}
 	}
@@ -34,7 +34,6 @@ func registerUser(app *App, userName, password string) (bool, error) {
 	if !(isValidUserName(userName) && isValidPassword(password)) {
 		return false, nil
 	}
-
 
 	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
