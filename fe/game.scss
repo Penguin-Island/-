@@ -1,0 +1,157 @@
+$animation-duration: 300ms;
+
+body {
+    margin: 10px;
+    padding: 0;
+}
+
+.count-down {
+    font-size: 50px;
+    text-align: end;
+    margin: 10px;
+}
+
+.prev-word {
+    font-size: 50px;
+    color: #c00000;
+    margin: 20px 0;
+    text-align: center;
+}
+
+.turn-info-container {
+    display: flex;
+    font-size: 20px;
+
+    .your-turn {
+        visibility: hidden;
+        flex: 80%;
+
+        &[data-your-turn='yes'] {
+            visibility: visible;
+        }
+    }
+}
+
+.send-field-container {
+    text-align: start;
+    display: flex;
+
+    .word-input {
+        $border-color: #ffc000;
+        $border-v: solid 10px $border-color;
+        $border-h: solid 15px $border-color;
+        flex-grow: 1;
+        margin: 5px;
+        border-top: $border-v;
+        border-bottom: $border-v;
+        border-left: $border-h;
+        border-right: $border-h;
+
+        input[type='text'] {
+            outline: none;
+            border: none;
+            font-size: 25px;
+            width: 100%;
+            background: none;
+            text-align: center;
+        }
+    }
+
+    .word-send {
+        flex-basis: 25px;
+        margin: 5px;
+
+        button {
+            $button-color: #d2280c;
+
+            font-size: 20px;
+            outline: none;
+            background-color: $button-color;
+            border: none;
+            color: white;
+            text-align: center;
+            padding: 10px 15px;
+            transition: background-color $animation-duration;
+
+            &:hover {
+                background-color: lighten($button-color, 10%);
+            }
+            &:active {
+                background-color: darken($button-color, 5%);
+            }
+            &:disabled {
+                background-color: desaturate($button-color, 100%);
+            }
+        }
+    }
+}
+
+.overlay {
+    background-color: rgba(0, 0, 0, 0.45);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+}
+
+.failure {
+    text-align: center;
+    justify-content: center;
+    flex-direction: column;
+    display: none;
+
+    &[data-activated='yes'] {
+        display: flex;
+    }
+
+    .message {
+        font-size: 150px;
+
+        span {
+            display: block;
+
+            &:nth-child(1) {
+                color: black;
+            }
+            &:nth-child(2) {
+                color: #2f5597;
+            }
+        }
+    }
+
+    .confirm-retry {
+        button {
+            $button-color: #ffc000;
+
+            color: white;
+            background-color: $button-color;
+            font-size: 45px;
+            border: none;
+            outline: none;
+            padding: 10px 50px;
+
+            &:hover {
+                background-color: lighten($button-color, 10%);
+            }
+            &:active {
+                background-color: darken($button-color, 5%);
+            }
+            &:disabled {
+                background-color: desaturate($button-color, 100%);
+            }
+        }
+    }
+}
+
+.finish {
+    justify-content: center;
+    flex-direction: column;
+    font-size: 150px;
+    text-align: center;
+    display: none;
+
+    &[data-activated='yes'] {
+        display: flex;
+    }
+}

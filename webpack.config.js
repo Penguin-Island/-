@@ -39,7 +39,7 @@ module.exports = {
     },
     plugins: [
         new MiniCssExtractPlugin({
-            filename: 'css/style.css',
+            filename: '[name]-[hash].css',
         }),
         new HtmlPlugin({
             template: 'fe/index.html',

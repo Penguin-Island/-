@@ -47,16 +47,18 @@ func isFlagEnabled(flags []string, key string) bool {
 	return false
 }
 
-func launchWebpackServer() error {
-	cmd := exec.Command("npm", "install")
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-	if err := cmd.Run(); err != nil {
-		return err
+func launchWebpackServer(runNpmInstall bool) error {
+	if runNpmInstall {
+		cmd := exec.Command("npm", "install")
+		cmd.Stdin = os.Stdin
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+		if err := cmd.Run(); err != nil {
+			return err
+		}
 	}
 
-	cmd = exec.Command("npm", "run", "_server")
+	cmd := exec.Command("npm", "run", "_server")
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	go func() {
@@ -130,7 +132,7 @@ func Run() {
 
 	if isFlagEnabled(os.Args[1:], "noproxy") {
 		r.SetTrustedProxies([]string{})
-		if err := launchWebpackServer(); err != nil {
+		if err := launchWebpackServer(!isFlagEnabled(os.Args[1:], "nonpminstall")); err != nil {
 			log.Fatal(err)
 		}
 		r.NoRoute(forwardToWebpack)
