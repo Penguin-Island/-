@@ -5,12 +5,31 @@ fetch('/testing', {
     method: 'post',
 });
 
+const bgm = new Audio('/assets/ryugen.mp3');
+bgm.loop = true;
+const seStart = new Audio('/assets/start.mp3');
+const seTurnChange = new Audio('/assets/turn.mp3');
+const seAlarm = new Audio('/assets/alarm.mp3');
+seAlarm.loop = true;
+
+const playAndPause = (audio) => {
+    audio.play();
+    audio.pause();
+};
+
 addEventListener('load', () => {
     let sock = null;
+    let stillWaitingRetry = false;
 
-    document.getElementById('startGame').addEventListener('click', () => {
-        document.getElementById('top').setAttribute('data-activated', 'no');
-        document.getElementById('game').setAttribute('data-activated', 'yes');
+    document.getElementById('startGame').addEventListener('click', (ev) => {
+        const target = ev.target as HTMLInputElement;
+        target.innerText = '相手を待っています…';
+        target.disabled = true;
+
+        playAndPause(bgm);
+        playAndPause(seStart);
+        playAndPause(seTurnChange);
+        playAndPause(seAlarm);
 
         sock = new WebSocket('ws://localhost:8000/api/ws');
         sock.addEventListener('close', () => {
@@ -21,32 +40,66 @@ addEventListener('load', () => {
         });
         sock.addEventListener('message', (ev) => {
             const data = JSON.parse(ev.data);
-            if (data['type'] == 'onChangeTurn') {
+            if (data['type'] == 'onStart') {
+                document.getElementById('top').setAttribute('data-activated', 'no');
+                document.getElementById('game').setAttribute('data-activated', 'yes');
+
+                seStart.play();
+                bgm.play();
+            } else if (data['type'] == 'onChangeTurn') {
                 document.getElementById('prevWord').innerText = data['data']['prevAnswer'];
 
                 const yourTurn = data['data']['yourTurn'];
                 document.getElementById('turn').innerText = yourTurn ? 'あなたの番' : '相手の番';
                 (document.getElementById('send') as HTMLInputElement).disabled = !yourTurn;
                 (document.getElementById('wordInput') as HTMLInputElement).disabled = !yourTurn;
+
+                if (yourTurn) {
+                    seTurnChange.play();
+                }
             } else if (data['type'] == 'onTick') {
                 document.getElementById('countDown').innerText = data['data']['remainSec'];
 
                 if (data['data']['waitingRetry']) {
+                    if (!stillWaitingRetry) {
+                        bgm.pause();
+                        seAlarm.play();
+                        stillWaitingRetry = true;
+                    }
+
                     document.getElementById('failureOverlay').setAttribute('data-activated', 'yes');
                     document.getElementById('finishOverlay').setAttribute('data-activated', 'no');
 
                     (document.getElementById('confirmRetry') as HTMLInputElement).disabled = false;
                 } else if (data['data']['finished']) {
+                    bgm.pause();
+                    seAlarm.pause();
+                    setTimeout(() => {
+                        location.href = '/finish/';
+                    }, 3000);
+
                     document.getElementById('failureOverlay').setAttribute('data-activated', 'no');
                     document.getElementById('finishOverlay').setAttribute('data-activated', 'yes');
                 } else {
+                    if (stillWaitingRetry) {
+                        stillWaitingRetry = false;
+                        bgm.play();
+                        seAlarm.pause();
+                    }
                     document.getElementById('failureOverlay').setAttribute('data-activated', 'no');
                     document.getElementById('finishOverlay').setAttribute('data-activated', 'no');
                     document.getElementById('turnCountDown').innerText =
                         data['data']['turnRemainSec'];
                 }
+            } else if (data['type'] == 'onError') {
+                document.getElementById('alertMessage').innerText = data['data']['reason'];
+                document.getElementById('alert').setAttribute('data-activated', 'yes');
             }
         });
+    });
+
+    document.getElementById('closeAlert').addEventListener('click', () => {
+        document.getElementById('alert').setAttribute('data-activated', 'no');
     });
 
     document.getElementById('wordInput').addEventListener('input', (event) => {
