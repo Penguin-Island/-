@@ -80,7 +80,7 @@ func Test_isValidUserName(t *testing.T) {
 			result: true,
 		},
 		{
-			name:   "use ",
+			name:   "use hiragana",
 			input:  "たろう",
 			result: false,
 		},
@@ -88,6 +88,68 @@ func Test_isValidUserName(t *testing.T) {
 	for _, testcase := range testcases {
 		t.Run(testcase.name, func(t *testing.T) {
 			result := isValidUserName(testcase.input)
+			if result != testcase.result {
+				t.Errorf("Unexpected result for %s: expected=%v, actual=%v\n", testcase.input, testcase.result, result)
+			}
+		})
+	}
+}
+
+func Test_isValidPassword(t *testing.T) {
+	testcases := []struct {
+		name   string
+		input  string
+		result bool
+	}{
+		{
+			name:   "less characters",
+			input:  "ta",
+			result: false,
+		},
+		{
+			name:   "only small",
+			input:  "tanakataro",
+			result: false,
+		},
+		{
+			name:   "only capital",
+			input:  "TANKATARO",
+			result: false,
+		},
+		{
+			name:   "use symbol",
+			input:  "TANAKA_taro1",
+			result: true,
+		},
+		{
+			name:   "only numbers",
+			input:  "0123456789",
+			result: false,
+		},
+		{
+			name:   "use small and numbers",
+			input:  "tanakataro1",
+			result: true,
+		},
+		{
+			name:   "use capital and numbers",
+			input:  "TANAKATARO1",
+			result: true,
+		},
+		{
+			name:   "use small and capital and numbers",
+			input:  "TANAKAtaro1",
+			result: true,
+		},
+		{
+			name:   "use hiragana",
+			input:  "たなかたろうtaro1",
+			result: true,
+		},
+	}
+	for _, testcase := range testcases {
+		t.Run(testcase.name, func(t *testing.T) {
+			result := isValidPassword(testcase.input)
 			if result != testcase.result {
 				t.Errorf("Unexpected result for %s: expected=%v, actual=%v\n", testcase.input, testcase.result, result)
 			}
