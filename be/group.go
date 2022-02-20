@@ -217,3 +217,32 @@ func handleUnjoin(app *App, c *gin.Context) {
 		return
 	}
 }
+
+func handleDeclineInvitations(app *App, c *gin.Context) {
+	sess := sessions.Default(c)
+	iUserId := sess.Get("user_id")
+	if iUserId == nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	} else if _, ok := iUserId.(uint); !ok {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	userId := iUserId.(uint)
+	sInvitationId, ok := c.GetPostForm("invitationId")
+	if !ok {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	invitationId, err := strconv.ParseUint(sInvitationId, 10, 64)
+	if err != nil {
+		log.Error(err)
+		c.AbortWithStatus(http.StatusBadRequest)
+	}
+
+	if err := app.db.Model(&Invitation{}).Where("invitee = ?", userId).Delete(invitationId).Error; err != nil {
+		log.Error(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+}
