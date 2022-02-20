@@ -223,6 +223,7 @@ addEventListener('load', () => {
                 document.getElementById('alert').setAttribute('data-activated', 'yes');
 
                 if (!started) {
+                    finished = true;
                     startButton.innerText = 'しりとり開始';
                     startButton.disabled = false;
                 }
