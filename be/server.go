@@ -197,6 +197,10 @@ func Run() {
 		handleGetInvitations(app, c)
 	})
 
+	r.POST("/api/group/decline_invitation", func(c *gin.Context) {
+		handleDeclineInvitations(app, c)
+	})
+
 	r.POST("/api/group/join", func(c *gin.Context) {
 		handleJoin(app, c)
 	})
