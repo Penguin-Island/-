@@ -84,5 +84,21 @@
 
             <div class="overlay finish" id="finishOverlay">終了</div>
         </div>
+
+        <div class="overlay invitation-overlay" id="invitationOverlay">
+            <div class="invitation-window">
+                <div class="message">以下のユーザーがあなたと一緒にしりとりをしたいようです</div>
+                <div id="invitationContainer"></div>
+            </div>
+        </div>
+        <template id="invitationRowTemplate">
+            <div class="invitation">
+                <div class="inviter-name"></div>
+                <div class="buttons">
+                    <button class="decline" type="button">辞退する</button>
+                    <button class="accept" type="button">受け入れる</button>
+                </div>
+            </div>
+        </template>
     </body>
 </html>

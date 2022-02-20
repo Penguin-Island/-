@@ -1,10 +1,5 @@
 import './game.scss';
 
-//TODO: remove this after implementing login.
-fetch('/testing', {
-    method: 'post',
-});
-
 const bgm = new Audio('/assets/ryugen.mp3');
 bgm.loop = true;
 const seStart = new Audio('/assets/start.mp3');
@@ -28,6 +23,7 @@ const showUserInfo = () => {
             if (resp['joinedGroup']) {
                 document.getElementById('startTime').innerText = resp['groupInfo']['wakeUpTime'];
                 document.getElementById('timeContainer').setAttribute('data-activated', 'yes');
+                document.getElementById('noFriendsTip').setAttribute('data-activated', 'no');
 
                 const friendsContainer = document.getElementById('friends');
                 if (resp['groupInfo']['members'].length > 0) {
@@ -40,6 +36,7 @@ const showUserInfo = () => {
                     }
                 }
             } else {
+                document.getElementById('timeContainer').setAttribute('data-activated', 'no');
                 document.getElementById('noFriendsTip').setAttribute('data-activated', 'yes');
                 document
                     .getElementById('startButtonContainer')
@@ -47,14 +44,98 @@ const showUserInfo = () => {
             }
         })
         .catch((err) => {
-            console.error(err);
             document.getElementById('alertMessage').innerText = 'ユーザー情報の取得に失敗しました';
+            document.getElementById('alert').setAttribute('data-activated', 'yes');
+        });
+};
+
+const showInvitations = () => {
+    fetch('/api/group/invitations')
+        .then((resp) => resp.json())
+        .then((data) => {
+            if (data.length === 0) {
+                return;
+            }
+
+            document.getElementById('invitationOverlay').setAttribute('data-activated', 'yes');
+            const container = document.getElementById('invitationContainer');
+            const template = document.getElementById(
+                'invitationRowTemplate'
+            ) as HTMLTemplateElement;
+
+            for (const inv of data) {
+                const row = (template.content.cloneNode(true) as DocumentFragment)
+                    .firstElementChild;
+                console.log(row);
+                container.appendChild(row);
+                (row.querySelector('.inviter-name') as HTMLElement).innerText = inv['inviter'];
+                (row.querySelector('.decline') as HTMLElement).addEventListener('click', () => {
+                    fetch('/api/group/decline_invitation', {
+                        method: 'post',
+                        body: `invitationId=${inv['invitationId']}`,
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                    })
+                        .then((resp) => {
+                            if (resp.status !== 200) {
+                                return;
+                            }
+                            container.removeChild(row);
+                            data = data.filter((e) => e['invitationId'] !== inv['invitationId']);
+                            if (data.length === 0) {
+                                document
+                                    .getElementById('invitationOverlay')
+                                    .setAttribute('data-activated', 'no');
+                            }
+                        })
+                        .catch((err) => {
+                            console.error(err);
+                            document.getElementById('alertMessage').innerText =
+                                '通信に失敗しました';
+                            document.getElementById('alert').setAttribute('data-activated', 'yes');
+                        });
+                });
+                (row.querySelector('.accept') as HTMLElement).addEventListener('click', () => {
+                    fetch('/api/group/join', {
+                        method: 'post',
+                        body: `invitationId=${inv['invitationId']}`,
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                    })
+                        .then((resp) => {
+                            if (resp.status !== 202) {
+                                return;
+                            }
+                            container.removeChild(row);
+                            data = data.filter((e) => e['invitationId'] !== inv['invitationId']);
+                            if (data.length === 0) {
+                                document
+                                    .getElementById('invitationOverlay')
+                                    .setAttribute('data-activated', 'no');
+                            }
+                            showUserInfo();
+                        })
+                        .catch((err) => {
+                            console.error(err);
+                            document.getElementById('alertMessage').innerText =
+                                '通信に失敗しました';
+                            document.getElementById('alert').setAttribute('data-activated', 'yes');
+                        });
+                });
+            }
+        })
+        .catch((err) => {
+            console.error(err);
+            document.getElementById('alertMessage').innerText = '招待情報の取得に失敗しました';
             document.getElementById('alert').setAttribute('data-activated', 'yes');
         });
 };
 
 addEventListener('load', () => {
     showUserInfo();
+    showInvitations();
 
     let sock = null;
     let stillWaitingRetry = false;

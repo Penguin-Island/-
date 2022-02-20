@@ -245,15 +245,6 @@ body {
         }
     }
 
-    .overlay {
-        background-color: rgba(0, 0, 0, 0.45);
-        position: absolute;
-        top: 0;
-        left: 0;
-        width: 100vw;
-        height: 100vh;
-    }
-
     .failure {
         text-align: center;
         justify-content: center;
@@ -313,6 +304,81 @@ body {
 
         &[data-activated='yes'] {
             display: flex;
+        }
+    }
+}
+
+.overlay {
+    background-color: rgba(0, 0, 0, 0.45);
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+}
+
+.invitation-overlay {
+    display: none;
+
+    &[data-activated='yes'] {
+        display: block;
+    }
+}
+
+.invitation-window {
+    background-color: white;
+    margin: 15px;
+    padding: 12px 0;
+    border-radius: 3px;
+    box-shadow: 8px 8px 10px rgba(0, 0, 0, 0.3);
+
+    .message {
+        padding: 3px 10px;
+    }
+
+    .invitation {
+        padding: 3px 10px;
+        border-top: 1px solid #aaa;
+        display: flex;
+
+        .inviter-name {
+            flex: 1;
+        }
+        .buttons {
+            flex-basis: fit-content;
+
+            button {
+                border: none;
+                padding: 3px 10px;
+                transition: background-color $animation-duration;
+            }
+
+            button.decline {
+                $background-color: #fc1919;
+
+                background-color: $background-color;
+                color: white;
+
+                &:hover {
+                    background-color: lighten($background-color, 10%);
+                }
+                &:active {
+                    background-color: darken($background-color, 5%);
+                }
+            }
+
+            button.accept {
+                $background-color: #ffc000;
+
+                background-color: $background-color;
+
+                &:hover {
+                    background-color: lighten($background-color, 10%);
+                }
+                &:active {
+                    background-color: darken($background-color, 5%);
+                }
+            }
         }
     }
 }
