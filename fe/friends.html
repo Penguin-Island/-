@@ -1,17 +1,34 @@
 <!DOCTYPE html>
-<!-- フレンド画面 -->
 <html>
     <head>
         <meta charset="utf-8" />
+        <title>フレンドを招待</title>
         <meta name="viewport" content="width=device-width" />
     </head>
     <body>
-        <form action="" method="post">
-            <label for="">フレンド</label>
-            <label><input type="text" />ID</label>
-            <button type="submit"><img src="" /></button>
+        <h1>フレンド</h1>
+        <div class="search-form-container">
+            <label for="playerTag">ID</label>
+            <div class="input-container">
+                <input type="text" id="playerTag" />
+            </div>
+            <div class="search-button-container">
+                <button type="submit" id="searchButton">🔍</button>
+            </div>
+        </div>
 
-            <button type="submit">TOP</button>
-        </form>
+        <div class="result-container" id="resultContainer" data-found="no">
+            <div class="not-found" id="message"></div>
+            <div class="found">
+                <div class="user-name-container" id="userName"></div>
+                <div class="invite-button-container">
+                    <button type="button" class="invite-button" id="inviteButton">招待</button>
+                </div>
+            </div>
+        </div>
+
+        <div class="top-link-container">
+            <a href="/game/">TOP</a>
+        </div>
     </body>
 </html>

@@ -162,6 +162,10 @@ func Run() {
 		handleRegisterUser(app, c)
 	})
 
+	r.GET("/api/user/find", func(c *gin.Context) {
+		handleFindUser(app, c)
+	})
+
 	r.POST("/api/login", func(c *gin.Context) {
 		var member Member
 		playerTag := c.PostForm("playerTag")

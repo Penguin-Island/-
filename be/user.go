@@ -146,3 +146,27 @@ func handleGetUserInfo(app *App, c *gin.Context) {
 
 	c.JSON(http.StatusOK, &userInfo)
 }
+
+func handleFindUser(app *App, c *gin.Context) {
+	sess := sessions.Default(c)
+	iUserId := sess.Get("user_id")
+	if iUserId == nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	} else if _, ok := iUserId.(uint); !ok {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	tag, ok := c.GetQuery("playerTag")
+	if !ok {
+		c.AbortWithStatus(http.StatusBadRequest)
+	}
+
+	var user Member
+	if err := app.db.First(&user, "player_tag = ?", tag).Error; err != nil {
+		c.Status(http.StatusNotFound)
+		return
+	}
+	c.Status(http.StatusFound)
+}
