@@ -101,7 +101,9 @@ func initDatabase() (*gorm.DB, error) {
 		return nil, err
 	}
 
-	db.AutoMigrate(&Member{})
+	if err := db.AutoMigrate(&Member{}); err != nil {
+		log.Warn(err)
+	}
 
 	return db, nil
 }

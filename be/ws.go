@@ -208,7 +208,7 @@ func manageGame(state *GameState) {
 }
 
 // グループのゲームに参加する
-func (s *GameStates) joinGroup(groupId string, userId int) (chan InternalNotification, chan InternalNotification) {
+func (s *GameStates) joinGame(groupId string, userId int) (chan InternalNotification, chan InternalNotification) {
 	s.gamesMu.Lock()
 	defer s.gamesMu.Unlock()
 	state, ok := s.games[groupId]
@@ -245,7 +245,7 @@ func (s *GameStates) joinGroup(groupId string, userId int) (chan InternalNotific
 	return notifier, state.toHub
 }
 
-func (s *GameStates) unjoinGroup(groupId string, userId int, notifier chan InternalNotification, removeUser bool) {
+func (s *GameStates) unjoinGame(groupId string, userId int, notifier chan InternalNotification, removeUser bool) {
 	s.gamesMu.Lock()
 	defer s.gamesMu.Unlock()
 	state := s.games[groupId]
@@ -312,7 +312,7 @@ func handleSocketConnection(app *App, c *gin.Context) {
 	}
 
 	// グループのゲームに参加する
-	notificationChan, toHub := app.gameStates.joinGroup(groupId, userId.(int))
+	notificationChan, toHub := app.gameStates.joinGame(groupId, userId.(int))
 
 	// 他のユーザが来るまで待機する
 	app.gameStates.gamesMu.Lock()
@@ -378,7 +378,7 @@ func handleSocketConnection(app *App, c *gin.Context) {
 					},
 				}
 				if err := conn.WriteJSON(payload); err != nil {
-					app.gameStates.unjoinGroup(groupId, userId.(int), notificationChan, true)
+					app.gameStates.unjoinGame(groupId, userId.(int), notificationChan, true)
 					return
 				}
 				break
@@ -391,7 +391,7 @@ func handleSocketConnection(app *App, c *gin.Context) {
 				goto startGame
 
 			case <-finishChan:
-				app.gameStates.unjoinGroup(groupId, userId.(int), notificationChan, true)
+				app.gameStates.unjoinGame(groupId, userId.(int), notificationChan, true)
 				return
 			}
 		}
@@ -464,5 +464,5 @@ startGame:
 	}
 
 disconnect:
-	app.gameStates.unjoinGroup(groupId, userId.(int), notificationChan, false)
+	app.gameStates.unjoinGame(groupId, userId.(int), notificationChan, false)
 }
