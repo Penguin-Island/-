@@ -77,6 +77,23 @@ body {
         }
     }
 
+    .switchable-container {
+        display: none;
+        &[data-activated='yes'] {
+            display: block;
+        }
+    }
+
+    .tip {
+        margin-top: 20px;
+        color: #555;
+        font-size: 15px;
+
+        a {
+            color: black;
+        }
+    }
+
     .main-content {
         width: 75vw;
         margin: 25px auto;
@@ -89,6 +106,25 @@ body {
 
         .friend-name {
             text-align: center;
+        }
+
+        .invite {
+            $background-color: #ffc000;
+
+            background-color: $background-color;
+            border: none;
+            transition: background-color $animation-duration;
+            display: block;
+            margin: 0 auto;
+            padding: 5px 30px;
+            font-size: 25px;
+
+            &:hover {
+                background-color: lighten($background-color, 10%);
+            }
+            &:active {
+                background-color: darken($background-color, 5%);
+            }
         }
 
         .success-rate-container {
