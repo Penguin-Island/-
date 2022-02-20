@@ -189,7 +189,7 @@ func Run() {
 		handleInvite(app, c)
 	})
 
-	r.GET("/api/group/get_invitation", func(c *gin.Context) {
+	r.GET("/api/group/invitations", func(c *gin.Context) {
 		handleGetInvitations(app, c)
 	})
 

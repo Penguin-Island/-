@@ -25,7 +25,7 @@ type Invitation struct {
 
 type InvitationResp struct {
 	Id      uint   `json:"invitationId"`
-	Invitee string `json:"invitee"`
+	Inviter string `json:"inviter"`
 }
 
 func handleInvite(app *App, c *gin.Context) {
@@ -118,15 +118,15 @@ func handleGetInvitations(app *App, c *gin.Context) {
 
 	invitationResp := make([]InvitationResp, 0)
 	for _, inv := range invitations {
-		var invitee Member
-		if err := app.db.First(&invitee, inv.Invitee).Error; err != nil {
+		var inviter Member
+		if err := app.db.First(&inviter, inv.Inviter).Error; err != nil {
 			log.Error(err)
 			continue
 		}
 
 		invitationResp = append(invitationResp, InvitationResp{
 			Id:      inv.ID,
-			Invitee: invitee.PlayerTag,
+			Inviter: inviter.PlayerTag,
 		})
 	}
 
@@ -241,7 +241,7 @@ func handleDeclineInvitations(app *App, c *gin.Context) {
 		c.AbortWithStatus(http.StatusBadRequest)
 	}
 
-	if err := app.db.Model(&Invitation{}).Where("invitee = ?", userId).Delete(invitationId).Error; err != nil {
+	if err := app.db.Model(&Invitation{}).Where("invitee = ?", userId).Delete("id = ?", invitationId).Error; err != nil {
 		log.Error(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
