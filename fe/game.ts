@@ -13,7 +13,7 @@ const playAndPause = (audio) => {
 };
 
 const showUserInfo = () => {
-    fetch('/api/user/info')
+    fetch('/users/info')
         .then((resp) => resp.json())
         .then((resp) => {
             document.getElementById('playerName').innerText = resp['userName'];
@@ -50,7 +50,7 @@ const showUserInfo = () => {
 };
 
 const showInvitations = () => {
-    fetch('/api/group/invitations')
+    fetch('/groups/invitations')
         .then((resp) => resp.json())
         .then((data) => {
             if (data.length === 0) {
@@ -70,7 +70,7 @@ const showInvitations = () => {
                 container.appendChild(row);
                 (row.querySelector('.inviter-name') as HTMLElement).innerText = inv['inviter'];
                 (row.querySelector('.decline') as HTMLElement).addEventListener('click', () => {
-                    fetch('/api/group/decline_invitation', {
+                    fetch('/groups/decline_invitation', {
                         method: 'post',
                         body: `invitationId=${inv['invitationId']}`,
                         headers: {
@@ -97,7 +97,7 @@ const showInvitations = () => {
                         });
                 });
                 (row.querySelector('.accept') as HTMLElement).addEventListener('click', () => {
-                    fetch('/api/group/join', {
+                    fetch('/groups/join', {
                         method: 'post',
                         body: `invitationId=${inv['invitationId']}`,
                         headers: {
@@ -153,7 +153,7 @@ addEventListener('load', () => {
         playAndPause(seTurnChange);
         playAndPause(seAlarm);
 
-        sock = new WebSocket('ws://localhost:8000/api/ws');
+        sock = new WebSocket('ws://localhost:8000/game_ws');
         sock.addEventListener('close', (err) => {
             if (!finished) {
                 document.getElementById('alertMessage').innerText = '接続が予期せず切断されました';

@@ -154,19 +154,19 @@ func Run() {
 		r.SetTrustedProxies([]string{"127.0.0.1"})
 	}
 
-	r.GET("/api/ws", func(c *gin.Context) {
+	r.GET("/game_ws", func(c *gin.Context) {
 		handleSocketConnection(app, c)
 	})
 
-	r.POST("/api/user/new", func(c *gin.Context) {
+	r.POST("/users/new", func(c *gin.Context) {
 		handleRegisterUser(app, c)
 	})
 
-	r.GET("/api/user/find", func(c *gin.Context) {
+	r.GET("/users/find", func(c *gin.Context) {
 		handleFindUser(app, c)
 	})
 
-	r.POST("/api/login", func(c *gin.Context) {
+	r.POST("/", func(c *gin.Context) {
 		var member Member
 		playerTag := c.PostForm("playerTag")
 		password := c.PostForm("password")
@@ -186,38 +186,38 @@ func Run() {
 		c.Redirect(http.StatusFound, "/game/")
 	})
 
-	r.GET("/api/logout", func(c *gin.Context) {
+	r.GET("/logout", func(c *gin.Context) {
 		sess := sessions.Default(c)
 		sess.Clear()
 		sess.Save()
 		c.Redirect(http.StatusFound, "/")
 	})
 
-	r.GET("/api/user/info", func(c *gin.Context) {
+	r.GET("/users/info", func(c *gin.Context) {
 		handleGetUserInfo(app, c)
 	})
 
-	r.POST("/api/group/invite", func(c *gin.Context) {
+	r.POST("/groups/invite", func(c *gin.Context) {
 		handleInvite(app, c)
 	})
 
-	r.GET("/api/group/invitations", func(c *gin.Context) {
+	r.GET("/groups/invitations", func(c *gin.Context) {
 		handleGetInvitations(app, c)
 	})
 
-	r.POST("/api/group/decline_invitation", func(c *gin.Context) {
+	r.POST("/groups/decline_invitation", func(c *gin.Context) {
 		handleDeclineInvitations(app, c)
 	})
 
-	r.POST("/api/group/join", func(c *gin.Context) {
+	r.POST("/groups/join", func(c *gin.Context) {
 		handleJoin(app, c)
 	})
 
-	r.POST("/api/group/unjoin", func(c *gin.Context) {
+	r.POST("/groups/unjoin", func(c *gin.Context) {
 		handleUnjoin(app, c)
 	})
 
-	r.POST("/api/group/set_time", func(c *gin.Context) {
+	r.POST("/groups/wake_up_time", func(c *gin.Context) {
 		handleSetTime(app, c)
 	})
 

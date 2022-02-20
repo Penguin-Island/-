@@ -7,7 +7,7 @@ addEventListener('load', () => {
         ev.preventDefault();
 
         playerTag = (document.getElementById('playerTag') as HTMLInputElement).value;
-        fetch(`/api/user/find?playerTag=${encodeURI(playerTag)}`)
+        fetch(`/users/find?playerTag=${encodeURI(playerTag)}`)
             .then((resp) => {
                 if (resp.status != 302) {
                     document.getElementById('message').innerText = '見つかりません';
@@ -22,7 +22,7 @@ addEventListener('load', () => {
     });
 
     document.getElementById('inviteButton').addEventListener('click', () => {
-        fetch('/api/group/invite', {
+        fetch('/groups/invite', {
             method: 'post',
             body: `player=${encodeURI(playerTag)}`,
             headers: {
