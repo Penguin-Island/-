@@ -33,6 +33,7 @@ type Member struct {
 type App struct {
 	db         *gorm.DB
 	gameStates GameStates
+	memcached  *mc.Client
 }
 
 func NewApp() *App {
@@ -139,8 +140,8 @@ func Run() {
 
 	r := gin.Default()
 
-	client := mc.NewMC("localhost:11211", "", "")
-	store := memcached.NewMemcacheStore(client, "", []byte(""))
+	app.memcached = mc.NewMC("localhost:11211", "", "")
+	store := memcached.NewMemcacheStore(app.memcached, "session-", []byte(""))
 	r.Use(sessions.Sessions("session", store))
 
 	if isFlagEnabled(os.Args[1:], "noproxy") {
