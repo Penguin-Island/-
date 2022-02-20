@@ -4,6 +4,7 @@ go 1.17
 
 require (
 	github.com/gin-contrib/sessions v0.0.4
+	github.com/gin-contrib/static v0.0.1
 	github.com/gin-gonic/gin v1.7.7
 	github.com/gorilla/websocket v1.5.0
 	github.com/memcachier/mc v2.0.1+incompatible

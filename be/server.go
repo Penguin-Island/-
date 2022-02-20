@@ -12,6 +12,7 @@ import (
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/memcached"
+	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/memcachier/mc"
 	log "github.com/sirupsen/logrus"
@@ -97,11 +98,15 @@ func generatePlayerTag(userName string) string {
 	return userName + strconv.Itoa(rand.Intn(8999)+1000)
 }
 
-func initDatabase() (*gorm.DB, error) {
+func initDatabase(verboseLog bool) (*gorm.DB, error) {
 	dsn := "host=localhost user=postgres password= dbname=ohatori port=5432 sslmode=disable TimeZone=Asia/Tokyo"
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
-		Logger: logger.Default.LogMode(logger.Info),
-	})
+
+	config := gorm.Config{}
+	if verboseLog {
+		config.Logger = logger.Default.LogMode(logger.Info)
+	}
+
+	db, err := gorm.Open(postgres.Open(dsn), &config)
 	if err != nil {
 		return nil, err
 	}
@@ -130,7 +135,7 @@ func Run() {
 
 	app := NewApp()
 
-	db, err := initDatabase()
+	db, err := initDatabase(!isFlagEnabled(os.Args[1:], "release"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -146,24 +151,30 @@ func Run() {
 
 	if isFlagEnabled(os.Args[1:], "noproxy") {
 		r.SetTrustedProxies([]string{})
-		if err := launchWebpackServer(!isFlagEnabled(os.Args[1:], "nonpminstall")); err != nil {
-			log.Fatal(err)
-		}
-		r.NoRoute(forwardToWebpack)
 	} else {
 		r.SetTrustedProxies([]string{"127.0.0.1"})
 	}
 
-	r.GET("/game_ws", func(c *gin.Context) {
-		handleSocketConnection(app, c)
-	})
+	var staticHandler func(*gin.Context)
+	if isFlagEnabled(os.Args[1:], "release") {
+		staticHandler = static.Serve("/", static.LocalFile("dist", false))
+		r.NoRoute(staticHandler)
+	} else {
+		staticHandler = forwardToWebpack
+		if err := launchWebpackServer(!isFlagEnabled(os.Args[1:], "nonpminstall")); err != nil {
+			log.Fatal(err)
+		}
+		r.NoRoute(forwardToWebpack)
+	}
 
-	r.POST("/users/new", func(c *gin.Context) {
-		handleRegisterUser(app, c)
-	})
-
-	r.GET("/users/find", func(c *gin.Context) {
-		handleFindUser(app, c)
+	r.GET("/", func(c *gin.Context) {
+		sess := sessions.Default(c)
+		userId := sess.Get("user_id")
+		if userId != nil {
+			c.Redirect(http.StatusFound, "/game/")
+			return
+		}
+		staticHandler(c)
 	})
 
 	r.POST("/", func(c *gin.Context) {
@@ -184,6 +195,48 @@ func Run() {
 		sess.Set("user_id", member.ID)
 		sess.Save()
 		c.Redirect(http.StatusFound, "/game/")
+	})
+
+	r.GET("/finish/", func(c *gin.Context) {
+		sess := sessions.Default(c)
+		userId := sess.Get("user_id")
+		if userId == nil {
+			c.Redirect(http.StatusFound, "/")
+			return
+		}
+		staticHandler(c)
+	})
+
+	r.GET("/friends/", func(c *gin.Context) {
+		sess := sessions.Default(c)
+		userId := sess.Get("user_id")
+		if userId == nil {
+			c.Redirect(http.StatusFound, "/")
+			return
+		}
+		staticHandler(c)
+	})
+
+	r.GET("/game/", func(c *gin.Context) {
+		sess := sessions.Default(c)
+		userId := sess.Get("user_id")
+		if userId == nil {
+			c.Redirect(http.StatusFound, "/")
+			return
+		}
+		staticHandler(c)
+	})
+
+	r.GET("/game_ws", func(c *gin.Context) {
+		handleSocketConnection(app, c)
+	})
+
+	r.POST("/users/new", func(c *gin.Context) {
+		handleRegisterUser(app, c)
+	})
+
+	r.GET("/users/find", func(c *gin.Context) {
+		handleFindUser(app, c)
 	})
 
 	r.GET("/logout", func(c *gin.Context) {
