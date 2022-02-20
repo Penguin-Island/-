@@ -39,14 +39,14 @@ func isValidPassword(password string) bool {
 	return hasAlpha && hasDigit
 }
 
-func registerUser(app *App, userName, password string) (bool, error) {
+func registerUser(app *App, userName, password string) (uint, bool, error) {
 	if !(isValidUserName(userName) && isValidPassword(password)) {
-		return false, nil
+		return 0, false, nil
 	}
 
 	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return false, err
+		return 0, false, err
 	}
 
 	member := Member{
@@ -64,22 +64,27 @@ func registerUser(app *App, userName, password string) (bool, error) {
 	}
 
 	if err != nil {
-		return true, err
+		return 0, true, err
 	}
-	return true, nil
+	return member.ID, true, nil
 }
 
 func handleRegisterUser(app *App, c *gin.Context) {
 	userName := c.PostForm("username")
 	password := c.PostForm("password")
 
-	if acceptable, err := registerUser(app, userName, password); !acceptable {
+	userId, acceptable, err := registerUser(app, userName, password)
+	if !acceptable {
 		c.Redirect(http.StatusFound, "/register/")
 	} else if err != nil {
 		c.Status(http.StatusInternalServerError)
 	}
 
-	c.Redirect(http.StatusFound, "/")
+	sess := sessions.Default(c)
+	sess.Set("user_id", userId)
+	sess.Save()
+
+	c.Redirect(http.StatusFound, "/game/")
 }
 
 type GroupInfoResp struct {
