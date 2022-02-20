@@ -1,7 +1,9 @@
 package be
 
 import (
+	"errors"
 	"net/http"
+	"strconv"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -131,7 +133,70 @@ func handleGetInvitations(app *App, c *gin.Context) {
 }
 
 func handleJoin(app *App, c *gin.Context) {
+	sess := sessions.Default(c)
+	iUserId := sess.Get("user_id")
+	if iUserId == nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	} else if _, ok := iUserId.(uint); !ok {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	userId := iUserId.(uint)
+	sInvitationId, ok := c.GetPostForm("invitationId")
+	if !ok {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+	invitationId, err := strconv.ParseUint(sInvitationId, 10, 64)
+	if err != nil {
+		log.Error(err)
+		c.AbortWithStatus(http.StatusBadRequest)
+	}
 
+	app.db.Transaction(func(tx *gorm.DB) error {
+		var user Member
+		if err := tx.First(&user, userId).Error; err != nil {
+			log.Error(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return err
+		}
+
+		var invitation Invitation
+		if err := tx.First(&invitation).Where("id = ?", invitationId, "invitee = ?", userId).Error; err != nil {
+			log.Error(err)
+			c.AbortWithStatus(http.StatusNotAcceptable)
+			return err
+		}
+
+		var count int64
+		if err := tx.Model(&Member{}).Where("group_id = ?", invitation.GroupId).Count(&count).Error; err != nil {
+			log.Error(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return err
+		}
+		if count > 1 {
+			c.AbortWithStatus(http.StatusNotAcceptable)
+			return errors.New("too many members")
+		}
+
+		user.GroupId = invitation.GroupId
+		if err := tx.Save(user).Error; err != nil {
+			log.Error(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return err
+		}
+
+		if err := tx.Delete(&invitation).Error; err != nil {
+			log.Error(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return err
+		}
+
+		c.Status(http.StatusAccepted)
+
+		return nil
+	})
 }
 
 func handleUnjoin(app *App, c *gin.Context) {
