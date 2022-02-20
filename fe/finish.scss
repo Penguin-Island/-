@@ -1,0 +1,99 @@
+@import 'font';
+
+$animation-duration: 300ms;
+
+body {
+    color: black;
+    background: white;
+    text-align: center;
+}
+
+.date-container {
+    margin-top: 20px;
+}
+
+.success {
+    color: #c00000;
+}
+.failure {
+    color: #0070c0;
+}
+
+.title-container {
+    font-size: 30px;
+
+    &[data-success='yes'] {
+        .success {
+            display: block;
+        }
+        .failure {
+            display: none;
+        }
+    }
+    &[data-success='no'] {
+        .success {
+            display: none;
+        }
+        .failure {
+            display: block;
+        }
+    }
+
+    h1 {
+        margin: 0;
+    }
+}
+
+.results-container {
+    margin: 40px 60px;
+    text-align: start;
+    font-size: 20px;
+}
+
+.result-row {
+    display: flex;
+    margin: 15px 0;
+
+    .date {
+        flex: 1;
+    }
+
+    .result {
+        flex-basis: fit-content;
+    }
+}
+
+.top-link-container {
+    a {
+        $background-color: #ffc000;
+
+        text-decoration: none;
+        color: white;
+        background-color: $background-color;
+        display: inline-block;
+        padding: 10px 25%;
+        font-size: 25px;
+        transition: background-color $animation-duration;
+
+        &:hover {
+            background-color: lighten($background-color, 10%);
+        }
+        &:active {
+            background-color: darken($background-color, 5%);
+        }
+    }
+}
+
+.error-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    padding: 10px 10px;
+    font-size: 20px;
+    background-color: #ff3e30;
+
+    &[data-has-error='no'] {
+        display: none;
+    }
+}

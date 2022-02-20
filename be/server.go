@@ -250,6 +250,10 @@ func Run() {
 		handleGetUserInfo(app, c)
 	})
 
+	r.GET("/users/statistics", func(c *gin.Context) {
+		handleGetStatistics(app, c)
+	})
+
 	r.POST("/groups/invite", func(c *gin.Context) {
 		handleInvite(app, c)
 	})

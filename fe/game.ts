@@ -66,7 +66,6 @@ const showInvitations = () => {
             for (const inv of data) {
                 const row = (template.content.cloneNode(true) as DocumentFragment)
                     .firstElementChild;
-                console.log(row);
                 container.appendChild(row);
                 (row.querySelector('.inviter-name') as HTMLElement).innerText = inv['inviter'];
                 (row.querySelector('.decline') as HTMLElement).addEventListener('click', () => {

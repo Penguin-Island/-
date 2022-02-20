@@ -1,6 +1,7 @@
 package be
 
 import (
+	"math/rand"
 	"net/http"
 
 	"github.com/gin-contrib/sessions"
@@ -174,4 +175,22 @@ func handleFindUser(app *App, c *gin.Context) {
 		return
 	}
 	c.Status(http.StatusFound)
+}
+
+type StatisticsResp struct {
+	Day     int  `json:"day"`
+	Month   int  `json:"month"`
+	Success bool `json:"success"`
+}
+
+func handleGetStatistics(app *App, c *gin.Context) {
+	statistics := make([]StatisticsResp, 0)
+	for i := 9; i <= 15; i++ {
+		statistics = append(statistics, StatisticsResp{
+			Day:     i,
+			Month:   2,
+			Success: rand.Intn(2) == 0,
+		})
+	}
+	c.JSON(http.StatusOK, &statistics)
 }

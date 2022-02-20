@@ -1,15 +1,30 @@
 <!DOCTYPE html>
-<!-- 終了画面 -->
 <html>
     <head>
         <meta charset="utf-8" />
+        <title>結果</title>
         <meta name="viewport" content="width=device-width" />
     </head>
     <body>
-        <form action="" method="post">
-            <div class="button2">
-                <button type="submit">TOP</button>
+        <div class="date-container"><span id="month"></span>月<span id="day"></span>日</div>
+        <div class="title-container" id="titleContainer" data-success="yes">
+            <h1 class="success">起床成功💮</h1>
+            <h1 class="failure">起床失敗</h1>
+        </div>
+
+        <div class="results-container" id="resultContainer"></div>
+
+        <div class="top-link-container">
+            <a href="/game/">TOP</a>
+        </div>
+
+        <div class="error-bar" id="errorBar" data-has-error="no">取得に失敗しました</div>
+
+        <template id="resultRow">
+            <div class="result-row">
+                <div class="date"></div>
+                <div class="result"></div>
             </div>
-        </form>
+        </template>
     </body>
 </html>
