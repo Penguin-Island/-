@@ -3,6 +3,7 @@ package be
 import (
 	"net/http"
 
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
@@ -79,4 +80,69 @@ func handleRegisterUser(app *App, c *gin.Context) {
 	}
 
 	c.Redirect(http.StatusFound, "/")
+}
+
+type GroupInfoResp struct {
+	Members    []string `json:"members"`
+	WakeUpTime string   `json:"wakeUpTime"`
+}
+
+type UserInfoResp struct {
+	UserName    string        `json:"userName"`
+	PlayerTag   string        `json:"playerTag"`
+	JoinedGroup bool          `json:"joinedGroup"`
+	GroupInfo   GroupInfoResp `json:"groupInfo"`
+	SuccessRate int           `json:"successRate"`
+}
+
+func handleGetUserInfo(app *App, c *gin.Context) {
+	sess := sessions.Default(c)
+	iUserId := sess.Get("user_id")
+	if iUserId == nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	} else if _, ok := iUserId.(uint); !ok {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	userId := iUserId.(uint)
+
+	var user Member
+	if err := app.db.First(&user, userId).Error; err != nil {
+		log.Error(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	userInfo := UserInfoResp{
+		UserName:    user.UserName,
+		PlayerTag:   user.PlayerTag,
+		JoinedGroup: user.GroupId != 0,
+		SuccessRate: 100,
+	}
+
+	userInfo.GroupInfo.Members = make([]string, 0)
+	if user.GroupId != 0 {
+		var group Group
+		if err := app.db.First(&group, user.GroupId).Error; err != nil {
+			log.Error(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		userInfo.GroupInfo.WakeUpTime = group.WakeUpTime
+
+		var groupMembers []Member
+		if err := app.db.Find(&groupMembers, "group_id = ?", user.GroupId).Error; err != nil {
+			log.Error(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		for _, memb := range groupMembers {
+			if memb.ID != userId {
+				userInfo.GroupInfo.Members = append(userInfo.GroupInfo.Members, memb.PlayerTag)
+			}
+		}
+	}
+
+	c.JSON(http.StatusOK, &userInfo)
 }

@@ -157,14 +157,6 @@ func Run() {
 		handleSocketConnection(app, c)
 	})
 
-	tmpUserId := 1
-	r.POST("/testing", func(c *gin.Context) {
-		sess := sessions.Default(c)
-		sess.Set("user_id", tmpUserId)
-		tmpUserId++
-		sess.Save()
-	})
-
 	r.POST("/api/user/new", func(c *gin.Context) {
 		handleRegisterUser(app, c)
 	})
@@ -187,6 +179,10 @@ func Run() {
 		sess.Set("user_id", member.ID)
 		sess.Save()
 		c.Redirect(http.StatusFound, "/game/")
+	})
+
+	r.GET("/api/user/info", func(c *gin.Context) {
+		handleGetUserInfo(app, c)
 	})
 
 	r.POST("/api/group/invite", func(c *gin.Context) {
