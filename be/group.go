@@ -20,6 +20,11 @@ type Invitation struct {
 	GroupId uint
 }
 
+type InvitationResp struct {
+	Id      uint   `json:"invitationId"`
+	Invitee string `json:"invitee"`
+}
+
 func handleInvite(app *App, c *gin.Context) {
 	sess := sessions.Default(c)
 	iUserId := sess.Get("user_id")
@@ -90,7 +95,39 @@ func handleInvite(app *App, c *gin.Context) {
 }
 
 func handleGetInvitations(app *App, c *gin.Context) {
+	sess := sessions.Default(c)
+	iUserId := sess.Get("user_id")
+	if iUserId == nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	} else if _, ok := iUserId.(uint); !ok {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	userId := iUserId.(uint)
 
+	var invitations []Invitation
+	if err := app.db.Find(&invitations, "invitee = ?", userId).Error; err != nil {
+		log.Error(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	invitationResp := make([]InvitationResp, 0)
+	for _, inv := range invitations {
+		var invitee Member
+		if err := app.db.First(&invitee, inv.Invitee).Error; err != nil {
+			log.Error(err)
+			continue
+		}
+
+		invitationResp = append(invitationResp, InvitationResp{
+			Id:      inv.ID,
+			Invitee: invitee.PlayerTag,
+		})
+	}
+
+	c.JSON(http.StatusOK, invitationResp)
 }
 
 func handleJoin(app *App, c *gin.Context) {
