@@ -26,6 +26,7 @@ type Member struct {
 	PlayerTag string `gorm:"unique"`
 	UserName  string
 	Password  string
+	GroupId   uint
 }
 
 type App struct {
@@ -104,6 +105,12 @@ func initDatabase() (*gorm.DB, error) {
 	if err := db.AutoMigrate(&Member{}); err != nil {
 		log.Warn(err)
 	}
+	if err := db.AutoMigrate(&Group{}); err != nil {
+		log.Warn(err)
+	}
+	if err := db.AutoMigrate(&Invitation{}); err != nil {
+		log.Warn(err)
+	}
 
 	return db, nil
 }
@@ -177,6 +184,22 @@ func Run() {
 		sess.Set("user_id", member.ID)
 		sess.Save()
 		c.Redirect(http.StatusFound, "/game/")
+	})
+
+	r.POST("/api/group/invite", func(c *gin.Context) {
+		handleInvite(app, c)
+	})
+
+	r.GET("/api/group/get_invitation", func(c *gin.Context) {
+		handleGetInvitations(app, c)
+	})
+
+	r.POST("/api/group/join", func(c *gin.Context) {
+		handleJoin(app, c)
+	})
+
+	r.POST("/api/group/unjoin", func(c *gin.Context) {
+		handleUnjoin(app, c)
 	})
 
 	if err := r.Run("0.0.0.0:8000"); err != nil {
