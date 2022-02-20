@@ -181,6 +181,13 @@ func Run() {
 		c.Redirect(http.StatusFound, "/game/")
 	})
 
+	r.GET("/api/logout", func(c *gin.Context) {
+		sess := sessions.Default(c)
+		sess.Clear()
+		sess.Save()
+		c.Redirect(http.StatusFound, "/")
+	})
+
 	r.GET("/api/user/info", func(c *gin.Context) {
 		handleGetUserInfo(app, c)
 	})
