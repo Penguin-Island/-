@@ -13,6 +13,7 @@ import (
 
 type Group struct {
 	gorm.Model
+	WakeUpTime string `gorm:"default:'07:00'"`
 }
 
 type Invitation struct {
