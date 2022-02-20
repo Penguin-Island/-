@@ -217,6 +217,10 @@ func Run() {
 		handleUnjoin(app, c)
 	})
 
+	r.POST("/api/group/set_time", func(c *gin.Context) {
+		handleSetTime(app, c)
+	})
+
 	if err := r.Run("0.0.0.0:8000"); err != nil {
 		if !isFlagEnabled(os.Args[1:], "release") {
 			log.Println(err)

@@ -21,7 +21,7 @@ func init() {
 	}
 	dbPort := os.Getenv("POSTGRES_PORT")
 	if len(dbPort) == 0 {
-		dbHost = "5432"
+		dbPort = "5432"
 	}
 	dsn := fmt.Sprintf(
 		"host=%s user=postgres password= dbname=ohatori port=%s sslmode=disable TimeZone=Asia/Tokyo",
@@ -176,7 +176,7 @@ func Test_registerUser(t *testing.T) {
 	}
 
 	for i := 0; i < 100; i++ {
-		acceptable, err := registerUser(app, "hoge", "li]t8OoL")
+		acceptable, err := registerUser(app, "hoge", "duos^aev6K")
 		if err != nil {
 			t.Fatal(err)
 		}
