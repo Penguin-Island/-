@@ -17,6 +17,7 @@ import (
 	log "github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
+	"gorm.io/gorm/logger"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -97,7 +98,9 @@ func generatePlayerTag(userName string) string {
 
 func initDatabase() (*gorm.DB, error) {
 	dsn := "host=localhost user=postgres password= dbname=ohatori port=5432 sslmode=disable TimeZone=Asia/Tokyo"
-	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{})
+	db, err := gorm.Open(postgres.Open(dsn), &gorm.Config{
+		Logger: logger.Default.LogMode(logger.Info),
+	})
 	if err != nil {
 		return nil, err
 	}
