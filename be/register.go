@@ -78,5 +78,5 @@ func handleRegisterUser(app *App, c *gin.Context) {
 		c.Status(http.StatusInternalServerError)
 	}
 
-	c.Redirect(http.StatusFound, "/top/")
+	c.Redirect(http.StatusFound, "/")
 }
