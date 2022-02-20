@@ -176,7 +176,7 @@ func Test_registerUser(t *testing.T) {
 	}
 
 	for i := 0; i < 100; i++ {
-		acceptable, err := registerUser(app, "hoge", "duos^aev6K")
+		_, acceptable, err := registerUser(app, "hoge", "duos^aev6K")
 		if err != nil {
 			t.Fatal(err)
 		}
