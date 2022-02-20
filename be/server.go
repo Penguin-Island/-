@@ -37,7 +37,7 @@ type App struct {
 
 func NewApp() *App {
 	app := new(App)
-	app.gameStates.games = make(map[string]*GameState)
+	app.gameStates.communicators = make(map[uint]chan InternalNotification)
 	return app
 }
 

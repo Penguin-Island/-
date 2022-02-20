@@ -141,9 +141,12 @@ addEventListener('load', () => {
     let stillWaitingRetry = false;
 
     document.getElementById('startGame').addEventListener('click', (ev) => {
-        const target = ev.target as HTMLInputElement;
-        target.innerText = '相手を待っています…';
-        target.disabled = true;
+        const startButton = ev.target as HTMLInputElement;
+        startButton.innerText = '相手を待っています…';
+        startButton.disabled = true;
+
+        let started = false;
+        let finished = false;
 
         playAndPause(bgm);
         playAndPause(seStart);
@@ -151,15 +154,19 @@ addEventListener('load', () => {
         playAndPause(seAlarm);
 
         sock = new WebSocket('ws://localhost:8000/api/ws');
-        sock.addEventListener('close', () => {
-            console.log('close');
-        });
-        sock.addEventListener('error', () => {
-            console.log('error');
+        sock.addEventListener('close', (err) => {
+            if (!finished) {
+                document.getElementById('alertMessage').innerText = '接続が予期せず切断されました';
+                document.getElementById('alert').setAttribute('data-activated', 'yes');
+            }
+            bgm.pause();
+            seAlarm.pause();
         });
         sock.addEventListener('message', (ev) => {
             const data = JSON.parse(ev.data);
             if (data['type'] == 'onStart') {
+                started = true;
+
                 document.getElementById('top').setAttribute('data-activated', 'no');
                 document.getElementById('game').setAttribute('data-activated', 'yes');
 
@@ -191,6 +198,7 @@ addEventListener('load', () => {
 
                     (document.getElementById('confirmRetry') as HTMLInputElement).disabled = false;
                 } else if (data['data']['finished']) {
+                    finished = true;
                     bgm.pause();
                     seAlarm.pause();
                     setTimeout(() => {
@@ -213,6 +221,11 @@ addEventListener('load', () => {
             } else if (data['type'] == 'onError') {
                 document.getElementById('alertMessage').innerText = data['data']['reason'];
                 document.getElementById('alert').setAttribute('data-activated', 'yes');
+
+                if (!started) {
+                    startButton.innerText = 'しりとり開始';
+                    startButton.disabled = false;
+                }
             }
         });
     });
