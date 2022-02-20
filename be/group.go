@@ -200,5 +200,20 @@ func handleJoin(app *App, c *gin.Context) {
 }
 
 func handleUnjoin(app *App, c *gin.Context) {
+	sess := sessions.Default(c)
+	iUserId := sess.Get("user_id")
+	if iUserId == nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	} else if _, ok := iUserId.(uint); !ok {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	userId := iUserId.(uint)
 
+	if err := app.db.Model(&Member{}).Where(userId).Update("group_id", 0).Error; err != nil {
+		log.Error(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
 }
