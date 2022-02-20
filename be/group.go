@@ -247,3 +247,67 @@ func handleDeclineInvitations(app *App, c *gin.Context) {
 		return
 	}
 }
+
+func isValidTime(str string) bool {
+	if len(str) != 5 {
+		return false
+	}
+	if str[2] != ':' {
+		return false
+	}
+	switch str[0] {
+	case '0':
+	case '1':
+		if str[1] < '0' || '9' < str[1] {
+			return false
+		}
+		break
+	case '2':
+		if str[1] != '0' && str[1] != '1' && str[1] != '2' && str[1] != '3' {
+			return false
+		}
+		break
+	default:
+		return false
+	}
+
+	if str[3] < '0' || '5' < str[3] {
+		return false
+	}
+	if str[4] < '0' || '9' < str[4] {
+		return false
+	}
+	return true
+}
+
+func handleSetTime(app *App, c *gin.Context) {
+	sess := sessions.Default(c)
+	iUserId := sess.Get("user_id")
+	if iUserId == nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	} else if _, ok := iUserId.(uint); !ok {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	userId := iUserId.(uint)
+
+	time := c.PostForm("time")
+	if !isValidTime(time) {
+		c.AbortWithStatus(http.StatusBadRequest)
+		return
+	}
+
+	var user Member
+	if err := app.db.First(&user, userId).Error; err != nil {
+		log.Error(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	if err := app.db.Model(&Group{}).Where(user.GroupId).Update("wake_up_time", time).Error; err != nil {
+		log.Error(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+}
