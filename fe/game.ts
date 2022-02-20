@@ -17,7 +17,45 @@ const playAndPause = (audio) => {
     audio.pause();
 };
 
+const showUserInfo = () => {
+    fetch('/api/user/info')
+        .then((resp) => resp.json())
+        .then((resp) => {
+            document.getElementById('playerName').innerText = resp['userName'];
+            document.getElementById('playerId').innerText = resp['playerTag'];
+
+            document.getElementById('successRate').innerText = resp['successRate'];
+            if (resp['joinedGroup']) {
+                document.getElementById('startTime').innerText = resp['groupInfo']['wakeUpTime'];
+                document.getElementById('timeContainer').setAttribute('data-activated', 'yes');
+
+                const friendsContainer = document.getElementById('friends');
+                if (resp['groupInfo']['members'].length > 0) {
+                    friendsContainer.innerHTML = '';
+                    for (const friend of resp['groupInfo']['members']) {
+                        const item = document.createElement('div');
+                        item.classList.add('friend-name');
+                        item.innerText = friend;
+                        friendsContainer.appendChild(item);
+                    }
+                }
+            } else {
+                document.getElementById('noFriendsTip').setAttribute('data-activated', 'yes');
+                document
+                    .getElementById('startButtonContainer')
+                    .setAttribute('data-activated', 'no');
+            }
+        })
+        .catch((err) => {
+            console.error(err);
+            document.getElementById('alertMessage').innerText = 'ユーザー情報の取得に失敗しました';
+            document.getElementById('alert').setAttribute('data-activated', 'yes');
+        });
+};
+
 addEventListener('load', () => {
+    showUserInfo();
+
     let sock = null;
     let stillWaitingRetry = false;
 

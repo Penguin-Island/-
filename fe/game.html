@@ -16,8 +16,8 @@
         <div id="top" class="top" data-activated="yes">
             <div class="top-bar">
                 <div class="player-info">
-                    <span id="playerName">hoge</span>
-                    <span class="player-id"> ID: <span id="playerId">hoge1234</span> </span>
+                    <span id="playerName"></span>
+                    <span class="player-id"> ID: <span id="playerId"></span> </span>
                 </div>
                 <div class="top-control">
                     <a href="/api/logout">ログアウト</a>
@@ -25,18 +25,29 @@
             </div>
 
             <div class="main-content">
-                目標時間
-                <div class="start-time">07:45</div>
+                <div class="switchable-container" id="timeContainer">
+                    目標時間
+                    <div class="start-time" id="startTime"></div>
+                </div>
                 フレンド
-                <div class="friend-name">未設定</div>
+                <div id="friends"></div>
+                <button class="invite" onclick="location.href = '/friends/'">対戦相手を招待</button>
 
                 <div class="success-rate-container">
                     起床成功率
-                    <span class="success-rate">75</span>%
+                    <span class="success-rate" id="successRate"></span>%
+                </div>
+
+                <div class="tip switchable-container" id="noFriendsTip" data-activated="no">
+                    対戦相手を招待するか、他のユーザーから招待を受けるとしりとりの対戦ができます
                 </div>
             </div>
 
-            <div class="start-button-container">
+            <div
+                class="start-button-container switchable-container"
+                id="startButtonContainer"
+                data-activated="yes"
+            >
                 <button type="button" class="start-button" id="startGame">しりとり開始</button>
             </div>
         </div>
