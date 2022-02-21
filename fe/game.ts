@@ -424,4 +424,15 @@ addEventListener('load', () => {
         ev.preventDefault();
         document.getElementById('friendInviteOverlay').setAttribute('data-activated', 'yes');
     });
+
+    document.querySelectorAll('.closeable-overlay').forEach((e) => {
+        e.addEventListener('click', () => {
+            e.setAttribute('data-activated', 'no');
+        });
+        if (e.children.length > 0) {
+            e.children[0].addEventListener('click', (ev) => {
+                ev.stopPropagation();
+            });
+        }
+    });
 });
