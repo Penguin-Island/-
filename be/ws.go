@@ -26,8 +26,9 @@ const (
 	EventTypeOnFailure       = "onFailure"
 	EventTypeOnChangeTurn    = "onChangeTurn"
 	EventTypeOnError         = "onError"
-	EventSendAnswer          = "sendAnswer"
-	EventConfirmRetry        = "confirmRetry"
+	EventTypeSendAnswer      = "sendAnswer"
+	EventTypeConfirmRetry    = "confirmRetry"
+	EventTypeOnInput         = "onInput"
 )
 
 var upgrader = websocket.Upgrader{
@@ -73,6 +74,9 @@ type IEStart struct{}
 type IEFailure struct{}
 type IEError struct {
 	Reason string
+}
+type IEInput struct {
+	Value string
 }
 
 type InternalNotification struct {
@@ -331,6 +335,11 @@ func manageGame(app *App, s *GameStates, groupId uint, startTime *time.Time, toH
 				if !hasNotConfirmedUsers {
 					waitingRetry = false
 				}
+				break
+
+			case IEInput:
+				notifyToEveryone(noti, communicators)
+				break
 			}
 			break
 		}
@@ -440,7 +449,7 @@ func handleSocketConnection(app *App, c *gin.Context) {
 			var intNoti InternalNotification
 			intNoti.EmitterUser = userId
 			switch ev.Type {
-			case EventSendAnswer:
+			case EventTypeSendAnswer:
 				word := ev.Data["word"]
 				if _, ok := word.(string); !ok {
 					conn.WriteJSON(EventPayload{
@@ -458,9 +467,27 @@ func handleSocketConnection(app *App, c *gin.Context) {
 				toHub <- intNoti
 				break
 
-			case EventConfirmRetry:
+			case EventTypeConfirmRetry:
 				intNoti.EmitterUser = userId
 				intNoti.Payload = IEConfirmRetry{}
+				toHub <- intNoti
+				break
+
+			case EventTypeOnInput:
+				intNoti.EmitterUser = userId
+				value := ev.Data["value"]
+				if _, ok := value.(string); !ok {
+					conn.WriteJSON(EventPayload{
+						Type: EventTypeOnError,
+						Data: map[string]interface{}{
+							"reason": ErrMsgBadReq,
+						},
+					})
+					goto next
+				}
+				intNoti.Payload = IEInput{
+					Value: value.(string),
+				}
 				toHub <- intNoti
 				break
 			}
@@ -545,6 +572,18 @@ func handleSocketConnection(app *App, c *gin.Context) {
 					goto disconnect
 				}
 				break
+
+			case IEInput:
+				payload := EventPayload{
+					Type: EventTypeOnInput,
+					Data: map[string]interface{}{
+						"value": data.Value,
+					},
+				}
+				if err := conn.WriteJSON(payload); err != nil {
+					log.Error(err)
+					goto disconnect
+				}
 			}
 		case <-finishChan:
 			goto disconnect
