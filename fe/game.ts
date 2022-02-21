@@ -169,7 +169,16 @@ addEventListener('load', () => {
         playAndPause(seTurnChange);
         playAndPause(seAlarm);
 
-        sock = new WebSocket('ws://localhost:8000/game_ws');
+        let addr;
+        if (location.protocol === 'https:') {
+            addr = 'wss://';
+        } else {
+            addr = 'ws://';
+        }
+        addr += location.host;
+        addr += '/game_ws';
+
+        sock = new WebSocket(addr);
         sock.addEventListener('close', (err) => {
             if (!finished) {
                 document.getElementById('alertMessage').innerText = '接続が予期せず切断されました';
