@@ -362,4 +362,66 @@ addEventListener('load', () => {
                 document.getElementById('alert').setAttribute('data-activated', 'yes');
             });
     });
+
+    let playerTag = null;
+    document.getElementById('searchFriendButton').addEventListener('click', (ev) => {
+        ev.preventDefault();
+
+        playerTag = (document.getElementById('friendNameInput') as HTMLInputElement).value;
+        fetch(`/users/find?playerTag=${encodeURI(playerTag)}`)
+            .then((resp) => {
+                if (resp.status != 302) {
+                    document.getElementById('friendInviteMessage').innerText = '見つかりません';
+                    return;
+                }
+                document.getElementById('friendSearchUserName').innerText = playerTag;
+                document
+                    .getElementById('friendSearchResultContainer')
+                    .setAttribute('data-found', 'yes');
+            })
+            .catch((err) => {
+                document
+                    .getElementById('friendSearchResultContainer')
+                    .setAttribute('data-found', 'no');
+            });
+    });
+
+    document.getElementById('friendSearchInviteButton').addEventListener('click', () => {
+        fetch('/groups/invite', {
+            method: 'post',
+            body: `player=${encodeURI(playerTag)}`,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+        })
+            .then((resp) => {
+                if (resp.status !== 201) {
+                    document
+                        .getElementById('friendSearchResultContainer')
+                        .setAttribute('data-found', 'no');
+                    document.getElementById('alertMessage').innerText = '招待に失敗しました';
+                    document.getElementById('alert').setAttribute('data-activated', 'yes');
+                    return;
+                }
+                document
+                    .getElementById('friendSearchResultContainer')
+                    .setAttribute('data-found', 'no');
+                (document.getElementById('friendNameInput') as HTMLInputElement).value = '';
+                document.getElementById('friendInviteMessage').innerText = '招待しました';
+            })
+            .catch((err) => {
+                document.getElementById('alertMessage').innerText = '招待に失敗しました';
+                document.getElementById('alert').setAttribute('data-activated', 'yes');
+            });
+    });
+
+    document.getElementById('closeFriendInviteWindow').addEventListener('click', (ev) => {
+        ev.preventDefault();
+        document.getElementById('friendInviteOverlay').setAttribute('data-activated', 'no');
+    });
+
+    document.getElementById('openFriendInviteButton').addEventListener('click', (ev) => {
+        ev.preventDefault();
+        document.getElementById('friendInviteOverlay').setAttribute('data-activated', 'yes');
+    });
 });

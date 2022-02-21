@@ -207,16 +207,6 @@ func Run() {
 		staticHandler(c)
 	})
 
-	r.GET("/friends/", func(c *gin.Context) {
-		sess := sessions.Default(c)
-		userId := sess.Get("user_id")
-		if userId == nil {
-			c.Redirect(http.StatusFound, "/")
-			return
-		}
-		staticHandler(c)
-	})
-
 	r.GET("/game/", func(c *gin.Context) {
 		sess := sessions.Default(c)
 		userId := sess.Get("user_id")

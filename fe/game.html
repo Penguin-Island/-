@@ -30,9 +30,7 @@
                 <div class="title-with-settings-container">
                     <div class="title">フレンド</div>
                     <div class="settings-button-container">
-                        <button class="settings-button" onclick="location.href = '/friends/'">
-                            招待
-                        </button>
+                        <button class="settings-button" id="openFriendInviteButton">招待</button>
                     </div>
                 </div>
                 <div id="friends"></div>
@@ -110,6 +108,41 @@
                         </div>
                     </div>
                 </form>
+            </div>
+        </div>
+
+        <div class="overlay friend-invite-overlay" id="friendInviteOverlay" data-activated="no">
+            <div class="window friend-invite-window">
+                <div class="title">フレンドを招待</div>
+                <form>
+                    <div class="search-field-container">
+                        <label class="friend-name-label" for="friendNameInput">ID</label>
+                        <div class="friend-name-input-container">
+                            <input type="text" id="friendNameInput" />
+                        </div>
+                        <div class="search-button-container">
+                            <button type="submit" id="searchFriendButton">🔍</button>
+                        </div>
+                    </div>
+                </form>
+                <div class="result-container" id="friendSearchResultContainer" data-found="no">
+                    <div class="not-found" id="friendInviteMessage"></div>
+                    <div class="found">
+                        <div class="user-name-container" id="friendSearchUserName"></div>
+                        <div class="invite-button-container">
+                            <button
+                                type="button"
+                                class="invite-button"
+                                id="friendSearchInviteButton"
+                            >
+                                招待
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="close-button-container">
+                    <button id="closeFriendInviteWindow">閉じる</button>
+                </div>
             </div>
         </div>
 

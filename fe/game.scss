@@ -344,6 +344,14 @@ body {
     }
 }
 
+.friend-invite-overlay {
+    display: none;
+
+    &[data-activated='yes'] {
+        display: block;
+    }
+}
+
 .time-settings-overlay {
     display: none;
 
@@ -393,6 +401,137 @@ body {
                 &:active {
                     background-color: darken($background-color, 5%);
                 }
+            }
+        }
+    }
+}
+
+.friend-invite-window {
+    padding: 12px;
+
+    .title {
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+
+    .search-field-container {
+        display: flex;
+        margin: 10px;
+        align-items: center;
+        width: 100%;
+        margin: 0 auto;
+
+        label {
+            flex-basis: fit-content;
+        }
+
+        .friend-name-input-container {
+            flex: 1;
+            margin: 10px;
+
+            input {
+                width: 100%;
+            }
+        }
+
+        .search-button-container {
+            flex-basis: fit-content;
+
+            button {
+                $background-color: #ffc000;
+
+                -moz-appearance: none;
+                -webkit-appearance: none;
+                appearance: none;
+                padding: 3px 10px;
+                margin: 10px 5px;
+                font-size: 1em;
+                background-color: $background-color;
+                color: white;
+                cursor: pointer;
+                border: 0;
+                transition: background-color $animation-duration;
+
+                &:hover {
+                    background-color: lighten($background-color, 10%);
+                }
+                &:active {
+                    background-color: darken($background-color, 5%);
+                }
+            }
+        }
+    }
+
+    .result-container {
+        margin: 20px 10px;
+
+        &[data-found='yes'] {
+            .not-found {
+                display: none;
+            }
+            .found {
+                display: flex;
+            }
+        }
+        &[data-found='no'] {
+            .not-found {
+                display: block;
+            }
+            .found {
+                display: none;
+            }
+        }
+
+        .found {
+            margin: 0 auto;
+
+            .user-name-container {
+                flex: 1;
+                text-align: start;
+            }
+            .invite-button-container {
+                flex-basis: fit-content;
+
+                button {
+                    $background-color: #ffc000;
+
+                    -moz-appearance: none;
+                    -webkit-appearance: none;
+                    appearance: none;
+                    background-color: $background-color;
+                    border: none;
+                    padding: 3px 10px;
+                    transition: background-color $animation-duration;
+                    cursor: pointer;
+
+                    &:hover {
+                        background-color: lighten($background-color, 10%);
+                    }
+                    &:active {
+                        background-color: darken($background-color, 5%);
+                    }
+                }
+            }
+        }
+    }
+
+    .close-button-container {
+        text-align: end;
+
+        button {
+            $background-color: #ffc000;
+
+            background-color: $background-color;
+            border: none;
+            padding: 3px 10px;
+            cursor: pointer;
+            transition: background-color $animation-duration;
+
+            &:hover {
+                background-color: lighten($background-color, 10%);
+            }
+            &:active {
+                background-color: darken($background-color, 5%);
             }
         }
     }

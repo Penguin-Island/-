@@ -11,7 +11,6 @@ module.exports = {
     entry: {
         index: './fe/index.ts',
         register: './fe/register.ts',
-        friends: './fe/friends.ts',
         game: './fe/game.ts',
         finish: './fe/finish.ts',
     },
@@ -49,11 +48,6 @@ module.exports = {
             template: 'fe/register.html',
             filename: 'register/index.html',
             chunks: ['register'],
-        }),
-        new HtmlPlugin({
-            template: 'fe/friends.html',
-            filename: 'friends/index.html',
-            chunks: ['friends'],
         }),
         new HtmlPlugin({
             template: 'fe/game.html',
