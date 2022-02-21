@@ -25,11 +25,10 @@ jobs:
           npm run prod
   backend:
     runs-on: ubuntu-latest
+    container: 'golang:latest'
     services:
       postgres:
         image: 'postgres:alpine'
-        ports:
-          - '5432:5432'
         env:
           POSTGRES_HOST_AUTH_METHOD: trust
         options: >-
@@ -51,7 +50,7 @@ jobs:
           git diff --exit-code &>/dev/null
       - name: Run test
         run: |
-          go test ./...
+          go test -v ./...
         env:
           POSTGRES_HOST: postgres
           POSTGRES_PORT: 5432
