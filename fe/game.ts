@@ -12,6 +12,20 @@ const playAndPause = (audio) => {
     audio.pause();
 };
 
+const handleCompositionEnd = (el: HTMLInputElement) => {
+    const str = el.value;
+    const resultStr = [];
+    for (let i = 0; i < str.length; i++) {
+        const cc = str.charCodeAt(i);
+        if ((0x3041 <= cc && cc <= 0x3096) || cc == 0x30fc) {
+            resultStr.push(cc);
+        } else if (0x30a1 <= cc && cc <= 0x30f6) {
+            resultStr.push(cc - 96);
+        }
+    }
+    el.value = String.fromCharCode(...resultStr);
+};
+
 const showUserInfo = () => {
     fetch('/users/info')
         .then((resp) => resp.json())
@@ -239,18 +253,10 @@ addEventListener('load', () => {
         if (ev.isComposing) {
             return;
         }
-        const inputElement = ev.target as HTMLInputElement;
-        const str = inputElement.value;
-        const resultStr = [];
-        for (let i = 0; i < str.length; i++) {
-            const cc = str.charCodeAt(i);
-            if ((0x3041 <= cc && cc <= 0x3096) || cc == 0x30fc) {
-                resultStr.push(cc);
-            } else if (0x30a1 <= cc && cc <= 0x30f6) {
-                resultStr.push(cc - 96);
-            }
-        }
-        inputElement.value = String.fromCharCode(...resultStr);
+        handleCompositionEnd(ev.target as HTMLInputElement);
+    });
+    document.getElementById('wordInput').addEventListener('compositionend', (event) => {
+        handleCompositionEnd(event.target as HTMLInputElement);
     });
 
     document.getElementById('send').addEventListener('click', (ev) => {
