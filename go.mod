@@ -3,11 +3,11 @@ module github.com/Penguin-Island/ohatori
 go 1.17
 
 require (
+	github.com/bradfitz/gomemcache v0.0.0-20220106215444-fb4bf637b56d
 	github.com/gin-contrib/sessions v0.0.4
 	github.com/gin-contrib/static v0.0.1
 	github.com/gin-gonic/gin v1.7.7
 	github.com/gorilla/websocket v1.5.0
-	github.com/memcachier/mc v2.0.1+incompatible
 	github.com/sirupsen/logrus v1.8.1
 	golang.org/x/crypto v0.0.0-20210921155107-089bfa567519
 	golang.org/x/text v0.3.7
@@ -16,7 +16,6 @@ require (
 )
 
 require (
-	github.com/bradfitz/gomemcache v0.0.0-20190913173617-a41fca850d0b // indirect
 	github.com/bradleypeabody/gorilla-sessions-memcache v0.0.0-20181103040241-659414f458e1 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-playground/locales v0.13.0 // indirect

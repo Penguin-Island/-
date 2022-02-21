@@ -10,11 +10,11 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/memcached"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
-	"github.com/memcachier/mc"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -34,7 +34,7 @@ type Member struct {
 type App struct {
 	db         *gorm.DB
 	gameStates GameStates
-	memcached  *mc.Client
+	memcached  *memcache.Client
 }
 
 func NewApp() *App {
@@ -147,8 +147,8 @@ func Run() {
 
 	r := gin.Default()
 
-	app.memcached = mc.NewMC("localhost:11211", "", "")
-	store := memcached.NewMemcacheStore(app.memcached, "session-", []byte(""))
+	app.memcached = memcache.New("localhost:11211")
+	store := memcached.NewStore(app.memcached, "session-", []byte(""))
 	r.Use(sessions.Sessions("session", store))
 
 	if isFlagEnabled(os.Args[1:], "noproxy") {
