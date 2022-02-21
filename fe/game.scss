@@ -118,6 +118,8 @@ body {
             margin: 0 auto;
             padding: 5px 30px;
             font-size: 25px;
+            color: black;
+            cursor: pointer;
 
             &:hover {
                 background-color: lighten($background-color, 10%);
@@ -148,6 +150,8 @@ body {
             color: white;
             font-size: 45px;
             padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color $animation-duration;
 
             &:hover {
                 background-color: lighten($background-color, 10%);
@@ -231,6 +235,7 @@ body {
                 text-align: center;
                 padding: 10px 15px;
                 transition: background-color $animation-duration;
+                cursor: pointer;
 
                 &:hover {
                     background-color: lighten($button-color, 10%);
@@ -281,6 +286,7 @@ body {
                 outline: none;
                 padding: 10px 50px;
                 transition: background-color $animation-duration;
+                cursor: pointer;
 
                 &:hover {
                     background-color: lighten($button-color, 10%);
@@ -358,6 +364,7 @@ body {
 
                 background-color: $background-color;
                 color: white;
+                cursor: pointer;
 
                 &:hover {
                     background-color: lighten($background-color, 10%);
@@ -371,6 +378,8 @@ body {
                 $background-color: #ffc000;
 
                 background-color: $background-color;
+                color: black;
+                cursor: pointer;
 
                 &:hover {
                     background-color: lighten($background-color, 10%);
