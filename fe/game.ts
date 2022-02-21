@@ -153,6 +153,9 @@ addEventListener('load', () => {
     let sock = null;
     let stillWaitingRetry = false;
 
+    let isTyping = false;
+    let isInputFocused = false;
+
     document.getElementById('startGame').addEventListener('click', (ev) => {
         const startButton = ev.target as HTMLInputElement;
         startButton.innerText = '相手を待っています…';
@@ -186,12 +189,16 @@ addEventListener('load', () => {
                 seStart.play();
                 bgm.play();
             } else if (data['type'] == 'onChangeTurn') {
+                const input = document.getElementById('wordInput') as HTMLInputElement;
+                input.value = '';
+
                 document.getElementById('prevWord').innerText = data['data']['prevAnswer'];
 
                 const yourTurn = data['data']['yourTurn'];
                 document.getElementById('turn').innerText = yourTurn ? 'あなたの番' : '相手の番';
                 (document.getElementById('send') as HTMLInputElement).disabled = !yourTurn;
                 (document.getElementById('wordInput') as HTMLInputElement).disabled = !yourTurn;
+                isTyping = yourTurn;
 
                 if (yourTurn) {
                     seTurnChange.play();
@@ -240,6 +247,11 @@ addEventListener('load', () => {
                     startButton.innerText = 'しりとり開始';
                     startButton.disabled = false;
                 }
+            } else if (data['type'] == 'onInput') {
+                if (!isTyping || !isInputFocused) {
+                    const input = document.getElementById('wordInput') as HTMLInputElement;
+                    input.value = data['data']['value'];
+                }
             }
         });
     });
@@ -250,13 +262,34 @@ addEventListener('load', () => {
 
     document.getElementById('wordInput').addEventListener('input', (event) => {
         const ev = event as InputEvent;
-        if (ev.isComposing) {
-            return;
+
+        sock.send(
+            JSON.stringify({
+                type: 'onInput',
+                data: {
+                    value: (ev.target as HTMLInputElement).value,
+                },
+            })
+        );
+
+        if (typeof ev.isComposing === 'undefined') {
+            if (typeof ev.inputType !== 'undefined' && !ev.inputType.match(/Composition/)) {
+                handleCompositionEnd(event.target as HTMLInputElement);
+            }
+        } else {
+            if (!ev.isComposing) {
+                handleCompositionEnd(event.target as HTMLInputElement);
+            }
         }
-        handleCompositionEnd(ev.target as HTMLInputElement);
     });
     document.getElementById('wordInput').addEventListener('compositionend', (event) => {
         handleCompositionEnd(event.target as HTMLInputElement);
+    });
+    document.getElementById('wordInput').addEventListener('focus', (event) => {
+        isInputFocused = true;
+    });
+    document.getElementById('wordInput').addEventListener('blur', (event) => {
+        isInputFocused = false;
     });
 
     document.getElementById('send').addEventListener('click', (ev) => {
