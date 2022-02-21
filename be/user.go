@@ -1,8 +1,9 @@
 package be
 
 import (
-	"math/rand"
+	"fmt"
 	"net/http"
+	"time"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -120,11 +121,24 @@ func handleGetUserInfo(app *App, c *gin.Context) {
 		return
 	}
 
+	// 成功率を計算
+	daysAfterSignUp, err := getDaysAfterSignUp(app, userId)
+	if err != nil {
+		log.Error(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	successCount, err := getSuccessCount(app, userId)
+	successRate := 100
+	if daysAfterSignUp != 0 {
+		successRate = successCount * 100 / daysAfterSignUp
+	}
+
 	userInfo := UserInfoResp{
 		UserName:    user.UserName,
 		PlayerTag:   user.PlayerTag,
 		JoinedGroup: user.GroupId != 0,
-		SuccessRate: 100,
+		SuccessRate: successRate,
 	}
 
 	userInfo.GroupInfo.Members = make([]string, 0)
@@ -135,7 +149,24 @@ func handleGetUserInfo(app *App, c *gin.Context) {
 			c.AbortWithStatus(http.StatusInternalServerError)
 			return
 		}
-		userInfo.GroupInfo.WakeUpTime = group.WakeUpTime
+
+		jst, err := time.LoadLocation("Asia/Tokyo")
+		if err != nil {
+			log.Error(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+
+		wakeUpTime, err := time.Parse("15:04", group.WakeUpTime)
+		if err != nil {
+			log.Error(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		now := time.Now().In(jst)
+		wakeUpTime = time.Date(now.Year(), now.Month(), now.Day(), wakeUpTime.Hour(), wakeUpTime.Minute(), 0, 0, time.UTC).In(jst)
+
+		userInfo.GroupInfo.WakeUpTime = fmt.Sprintf("%02d:%02d", wakeUpTime.Hour(), wakeUpTime.Minute())
 
 		var groupMembers []Member
 		if err := app.db.Find(&groupMembers, "group_id = ?", user.GroupId).Error; err != nil {
@@ -178,19 +209,66 @@ func handleFindUser(app *App, c *gin.Context) {
 }
 
 type StatisticsResp struct {
+	Year    int  `json:"year"`
 	Day     int  `json:"day"`
 	Month   int  `json:"month"`
 	Success bool `json:"success"`
 }
 
 func handleGetStatistics(app *App, c *gin.Context) {
-	statistics := make([]StatisticsResp, 0)
-	for i := 9; i <= 15; i++ {
-		statistics = append(statistics, StatisticsResp{
-			Day:     i,
-			Month:   2,
-			Success: rand.Intn(2) == 0,
-		})
+	sess := sessions.Default(c)
+	iUserId := sess.Get("user_id")
+	if iUserId == nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	} else if _, ok := iUserId.(uint); !ok {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
 	}
+	userId := iUserId.(uint)
+
+	jst, err := time.LoadLocation("Asia/Tokyo")
+	if err != nil {
+		log.Error(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	var user Member
+	if err := app.db.First(&user, userId).Error; err != nil {
+		log.Error(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	var statsData []Statistics
+	if err := app.db.Where("user_id = ?", user.ID).Order("created_at").Limit(7).Find(&statsData).Error; err != nil {
+		log.Error(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	now := time.Now().In(jst)
+	var wakeUpTime time.Time
+	if user.GroupId == 0 {
+		wakeUpTime = time.Date(now.Year(), now.Month(), now.Day(), 0, 0, 0, 0, jst)
+	} else {
+		var group Group
+		if err := app.db.First(&group, user.GroupId).Error; err != nil {
+			log.Error(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		savedTime, err := time.Parse("15:04", group.WakeUpTime)
+		if err != nil {
+			log.Error(err)
+			c.AbortWithStatus(http.StatusInternalServerError)
+			return
+		}
+		wakeUpTime = time.Date(now.Year(), now.Month(), now.Day(), savedTime.Hour(), savedTime.Minute(), 0, 0, time.UTC).In(jst)
+	}
+
+	statistics := collectStats(statsData, wakeUpTime, user.CreatedAt, now, jst)
+
 	c.JSON(http.StatusOK, &statistics)
 }

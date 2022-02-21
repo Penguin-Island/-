@@ -355,8 +355,11 @@ func manageGame(app *App, s *GameStates, groupId uint, startTime *time.Time, toH
 	// 成功
 
 deleteCommunicator:
-	log.Info("Deleting communicator")
+	for _, u := range users {
+		invalidateStatCache(app, u)
+	}
 
+	log.Info("Deleting communicator")
 	s.gamesMu.Lock()
 	defer s.gamesMu.Unlock()
 	delete(s.communicators, groupId)

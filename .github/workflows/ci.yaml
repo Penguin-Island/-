@@ -52,5 +52,6 @@ jobs:
         run: |
           go test -v ./...
         env:
-          POSTGRES_HOST: postgres
-          POSTGRES_PORT: 5432
+          RUN_DB_TEST: '1'
+          POSTGRES_HOST: 'postgres'
+          POSTGRES_PORT: '5432'

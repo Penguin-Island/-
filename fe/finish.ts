@@ -10,8 +10,6 @@ addEventListener('load', () => {
                 errBar.setAttribute('data-has-error', 'yes');
                 return;
             }
-            data.reverse();
-
             document.getElementById('month').innerText = data[0]['month'].toString();
             document.getElementById('day').innerText = data[0]['day'].toString();
             document

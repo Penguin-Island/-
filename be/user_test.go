@@ -15,6 +15,10 @@ var db *gorm.DB
 var runnable = true
 
 func init() {
+	if os.Getenv("RUN_DB_TEST") != "1" {
+		return
+	}
+
 	dbHost := os.Getenv("POSTGRES_HOST")
 	if len(dbHost) == 0 {
 		dbHost = "localhost"

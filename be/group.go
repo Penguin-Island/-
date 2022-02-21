@@ -2,8 +2,10 @@ package be
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -13,7 +15,7 @@ import (
 
 type Group struct {
 	gorm.Model
-	WakeUpTime string `gorm:"default:'07:00'"`
+	WakeUpTime string `gorm:"default:'22:00'"`
 }
 
 type Invitation struct {
@@ -248,38 +250,6 @@ func handleDeclineInvitations(app *App, c *gin.Context) {
 	}
 }
 
-func isValidTime(str string) bool {
-	if len(str) != 5 {
-		return false
-	}
-	if str[2] != ':' {
-		return false
-	}
-	switch str[0] {
-	case '0':
-	case '1':
-		if str[1] < '0' || '9' < str[1] {
-			return false
-		}
-		break
-	case '2':
-		if str[1] != '0' && str[1] != '1' && str[1] != '2' && str[1] != '3' {
-			return false
-		}
-		break
-	default:
-		return false
-	}
-
-	if str[3] < '0' || '5' < str[3] {
-		return false
-	}
-	if str[4] < '0' || '9' < str[4] {
-		return false
-	}
-	return true
-}
-
 func handleSetTime(app *App, c *gin.Context) {
 	sess := sessions.Default(c)
 	iUserId := sess.Get("user_id")
@@ -292,11 +262,21 @@ func handleSetTime(app *App, c *gin.Context) {
 	}
 	userId := iUserId.(uint)
 
-	time := c.PostForm("time")
-	if !isValidTime(time) {
+	jst, err := time.LoadLocation("Asia/Tokyo")
+	if err != nil {
+		log.Error(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	parsedTime, err := time.Parse("15:04", c.PostForm("time"))
+	if err != nil {
 		c.AbortWithStatus(http.StatusBadRequest)
 		return
 	}
+
+	now := time.Now().In(jst)
+	resultTime := time.Date(now.Year(), now.Month(), now.Day(), parsedTime.Hour(), parsedTime.Minute(), 0, 0, jst).In(time.UTC)
 
 	var user Member
 	if err := app.db.First(&user, userId).Error; err != nil {
@@ -305,7 +285,7 @@ func handleSetTime(app *App, c *gin.Context) {
 		return
 	}
 
-	if err := app.db.Model(&Group{}).Where(user.GroupId).Update("wake_up_time", time).Error; err != nil {
+	if err := app.db.Model(&Group{}).Where(user.GroupId).Update("wake_up_time", fmt.Sprintf("%02d:%02d", resultTime.Hour(), resultTime.Minute())).Error; err != nil {
 		log.Error(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
