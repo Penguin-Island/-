@@ -120,7 +120,9 @@ func initDatabase(verboseLog bool) (*gorm.DB, error) {
 	if err := db.AutoMigrate(&Invitation{}); err != nil {
 		log.Warn(err)
 	}
-
+	if err := db.AutoMigrate(&Statistics{}); err != nil {
+		log.Warn(err)
+	}
 	return db, nil
 }
 
