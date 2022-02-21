@@ -36,6 +36,8 @@ const showUserInfo = () => {
             document.getElementById('successRate').innerText = resp['successRate'];
             if (resp['joinedGroup']) {
                 document.getElementById('startTime').innerText = resp['groupInfo']['wakeUpTime'];
+                (document.getElementById('timeInput') as HTMLInputElement).value =
+                    resp['groupInfo']['wakeUpTime'];
                 document.getElementById('timeContainer').setAttribute('data-activated', 'yes');
                 document.getElementById('noFriendsTip').setAttribute('data-activated', 'no');
 
@@ -326,5 +328,38 @@ addEventListener('load', () => {
         (ev.target as HTMLInputElement).disabled = true;
 
         sock.send(JSON.stringify({type: 'confirmRetry', data: {}}));
+    });
+
+    document.getElementById('openTimeSettings').addEventListener('click', (ev) => {
+        ev.preventDefault();
+
+        document.getElementById('timeSettingsOverlay').setAttribute('data-activated', 'yes');
+    });
+
+    document.getElementById('setTime').addEventListener('click', (ev) => {
+        ev.preventDefault();
+
+        const value = (document.getElementById('timeInput') as HTMLInputElement).value;
+
+        fetch('/groups/wake_up_time', {
+            method: 'post',
+            body: `time=${encodeURI(value)}`,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            },
+        })
+            .then((resp) => {
+                if (resp.status !== 200) {
+                    document.getElementById('alertMessage').innerText = '設定に失敗しました';
+                    document.getElementById('alert').setAttribute('data-activated', 'yes');
+                    return;
+                }
+                showUserInfo();
+                document.getElementById('timeSettingsOverlay').setAttribute('data-activated', 'no');
+            })
+            .catch((err) => {
+                document.getElementById('alertMessage').innerText = '設定に失敗しました';
+                document.getElementById('alert').setAttribute('data-activated', 'yes');
+            });
     });
 });

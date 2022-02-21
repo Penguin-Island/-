@@ -6,13 +6,6 @@
         <meta name="viewport" content="width=device-width" />
     </head>
     <body>
-        <div class="alert" id="alert" data-activated="no">
-            <div class="alert-message" id="alertMessage"></div>
-            <div class="close-container">
-                <button id="closeAlert" type="button" class="close-button">✕</button>
-            </div>
-        </div>
-
         <div id="top" class="top" data-activated="yes">
             <div class="top-bar">
                 <div class="player-info">
@@ -26,12 +19,23 @@
 
             <div class="main-content">
                 <div class="switchable-container" id="timeContainer">
-                    目標時間
+                    <div class="title-with-settings-container">
+                        <div class="title">目標時間</div>
+                        <div class="settings-button-container">
+                            <button class="settings-button" id="openTimeSettings">設定</button>
+                        </div>
+                    </div>
                     <div class="start-time" id="startTime"></div>
                 </div>
-                フレンド
+                <div class="title-with-settings-container">
+                    <div class="title">フレンド</div>
+                    <div class="settings-button-container">
+                        <button class="settings-button" onclick="location.href = '/friends/'">
+                            招待
+                        </button>
+                    </div>
+                </div>
                 <div id="friends"></div>
-                <button class="invite" onclick="location.href = '/friends/'">対戦相手を招待</button>
 
                 <div class="success-rate-container">
                     起床成功率
@@ -86,11 +90,36 @@
         </div>
 
         <div class="overlay invitation-overlay" id="invitationOverlay">
-            <div class="invitation-window">
+            <div class="window invitation-window">
                 <div class="message">以下のユーザーがあなたと一緒にしりとりをしたいようです</div>
                 <div id="invitationContainer"></div>
             </div>
         </div>
+
+        <div class="overlay time-settings-overlay" id="timeSettingsOverlay" data-activated="no">
+            <div class="window time-settings-window">
+                <div class="title">時間を設定</div>
+                <form>
+                    <div class="content-container">
+                        <div class="input-field-container">
+                            <label for="timeInput">起床時間</label>
+                            <input type="time" id="timeInput" />
+                        </div>
+                        <div class="send-button-container">
+                            <button type="submit" id="setTime">設定</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+
+        <div class="alert" id="alert" data-activated="no">
+            <div class="alert-message" id="alertMessage"></div>
+            <div class="close-container">
+                <button id="closeAlert" type="button" class="close-button">✕</button>
+            </div>
+        </div>
+
         <template id="invitationRowTemplate">
             <div class="invitation">
                 <div class="inviter-name"></div>

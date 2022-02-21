@@ -108,24 +108,37 @@ body {
             text-align: center;
         }
 
-        .invite {
-            $background-color: #ffc000;
+        .title-with-settings-container {
+            display: flex;
+            align-items: center;
 
-            background-color: $background-color;
-            border: none;
-            transition: background-color $animation-duration;
-            display: block;
-            margin: 0 auto;
-            padding: 5px 30px;
-            font-size: 25px;
-            color: black;
-            cursor: pointer;
-
-            &:hover {
-                background-color: lighten($background-color, 10%);
+            .title {
+                flex: 1;
             }
-            &:active {
-                background-color: darken($background-color, 5%);
+
+            .settings-button-container {
+                flex-basis: fit-content;
+            }
+
+            .settings-button {
+                $background-color: #ffc000;
+
+                background-color: $background-color;
+                border: none;
+                transition: background-color $animation-duration;
+                display: block;
+                margin: 0 auto;
+                padding: 0 10px;
+                font-size: 20px;
+                color: black;
+                cursor: pointer;
+
+                &:hover {
+                    background-color: lighten($background-color, 10%);
+                }
+                &:active {
+                    background-color: darken($background-color, 5%);
+                }
             }
         }
 
@@ -331,13 +344,61 @@ body {
     }
 }
 
-.invitation-window {
+.time-settings-overlay {
+    display: none;
+
+    &[data-activated='yes'] {
+        display: block;
+    }
+}
+
+.window {
     background-color: white;
     margin: 15px;
     padding: 12px 0;
     border-radius: 3px;
     box-shadow: 8px 8px 10px rgba(0, 0, 0, 0.3);
+}
 
+.time-settings-window {
+    padding: 12px;
+
+    .title {
+        font-size: 20px;
+        margin-bottom: 10px;
+    }
+
+    .content-container {
+        display: flex;
+
+        .input-field-container {
+            flex: 1;
+        }
+
+        .send-button-container {
+            flex-basis: fit-content;
+
+            button {
+                $background-color: #ffc000;
+
+                background-color: $background-color;
+                border: none;
+                padding: 3px 10px;
+                cursor: pointer;
+                transition: background-color $animation-duration;
+
+                &:hover {
+                    background-color: lighten($background-color, 10%);
+                }
+                &:active {
+                    background-color: darken($background-color, 5%);
+                }
+            }
+        }
+    }
+}
+
+.invitation-window {
     .message {
         padding: 3px 10px;
     }
