@@ -43,7 +43,7 @@
 - `remainSec`: 残り秒数が格納されます。
 - `turnRemainSec`: ターンの残り秒数です。
 - `finished`: ゲームが終了したかどうかが格納されます。
-- `waitingRetry`: リトライ待ちかどうかが格納されます。
+- `waitingContinue`: リトライ待ちかどうかが格納されます。
 
 ペイロード例:
 ```js
@@ -53,7 +53,7 @@
         "remainSec": 5,
         "turnRemainSec": 2,
         "finished": false,
-        "waitingRetry": false
+        "waitingContinue": false
     }
 }
 ```
@@ -140,7 +140,7 @@
 }
 ```
 
-##### `confirmRetry`
+##### `confirmContinue`
 
 リトライします。
 
@@ -149,7 +149,7 @@
 ペイロード例
 ```js
 {
-    "type": "confirmRetry",
+    "type": "confirmContinue",
     "data": {}
 }
 ```

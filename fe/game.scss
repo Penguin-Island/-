@@ -263,6 +263,17 @@ body {
         }
     }
 
+    .wait-continue-indicator {
+        text-align: center;
+
+        &[data-waiting='yes'] {
+            display: block;
+        }
+        &[data-waiting='no'] {
+            display: none;
+        }
+    }
+
     .failure {
         text-align: center;
         justify-content: center;
@@ -294,10 +305,10 @@ body {
 
                 color: white;
                 background-color: $button-color;
-                font-size: 45px;
+                font-size: 30px;
                 border: none;
                 outline: none;
-                padding: 10px 50px;
+                padding: 10px 20px;
                 transition: background-color $animation-duration;
                 cursor: pointer;
 

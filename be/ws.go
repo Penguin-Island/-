@@ -27,7 +27,7 @@ const (
 	EventTypeOnChangeTurn    = "onChangeTurn"
 	EventTypeOnError         = "onError"
 	EventTypeSendAnswer      = "sendAnswer"
-	EventTypeConfirmRetry    = "confirmRetry"
+	EventTypeConfirmContinue = "confirmContinue"
 	EventTypeOnInput         = "onInput"
 )
 
@@ -38,19 +38,6 @@ var upgrader = websocket.Upgrader{
 	CheckOrigin: func(*http.Request) bool { return true },
 }
 
-const (
-	InternalJoinMember = iota
-	InternalUnjoinMember
-	InternalGameStarted
-	InternalTick
-	InternalChangeTurn
-	InternalSendWord
-	InternalConfirmRetry
-	InternalOnStart
-	InternalOnFailure
-	InternalOnError
-)
-
 type IEJoinMember struct {
 	Channel chan InternalNotification
 }
@@ -58,9 +45,10 @@ type IEUnjoinMember struct {
 	Channel chan InternalNotification
 }
 type IETick struct {
-	Remain       int
-	TurnRemain   int
-	WaitingRetry bool
+	Remain          int
+	TurnRemain      int
+	WaitingContinue bool
+	FailingUser     uint
 }
 type IEChangeTurn struct {
 	PrevWord   string
@@ -69,7 +57,7 @@ type IEChangeTurn struct {
 type IESendWord struct {
 	Word string
 }
-type IEConfirmRetry struct{}
+type IEConfirmContinue struct{}
 type IEStart struct{}
 type IEFailure struct{}
 type IEError struct {
@@ -174,10 +162,11 @@ func areAllMembersJoined(app *App, users []uint, groupId uint) (bool, error) {
 func manageGame(app *App, s *GameStates, groupId uint, startTime *time.Time, toHub chan InternalNotification) {
 	remain := 300
 	turnRemain := 20
-	waitingRetry := false
+	continueRemain := 30
+	waitingContinue := false
 	users := make([]uint, 0)
+	userFailCount := make(map[uint]int)
 	communicators := make([]chan InternalNotification, 0)
-	var retryConfirmed []bool
 	noti := InternalNotification{}
 	turnIndex := 0
 	prevWord := "おはよう"
@@ -195,28 +184,42 @@ func manageGame(app *App, s *GameStates, groupId uint, startTime *time.Time, toH
 			goto deleteCommunicator
 
 		case <-ticker.C:
-			if waitingRetry {
-				if turnRemain == 0 {
-					noti.Payload = IEFailure{}
-					notifyToEveryone(noti, communicators)
-					return
+			if waitingContinue {
+				continueRemain--
+				lastTickInfo.Remain = remain
+				lastTickInfo.TurnRemain = turnRemain
+				lastTickInfo.WaitingContinue = true
+				noti.Payload = lastTickInfo
+				notifyToEveryone(noti, communicators)
+				if continueRemain == 0 {
+					waitingContinue = false
 				}
-				turnRemain--
-			} else {
-				if turnRemain == 0 {
-					waitingRetry = true
-					turnRemain = 20
-					retryConfirmed = make([]bool, len(users))
-					break
-				}
-				remain--
-				turnRemain--
+				break
 			}
+			remain--
+			turnRemain--
 			lastTickInfo.Remain = remain
 			lastTickInfo.TurnRemain = turnRemain
-			lastTickInfo.WaitingRetry = waitingRetry
+			lastTickInfo.WaitingContinue = false
+			lastTickInfo.FailingUser = users[turnIndex]
 			noti.Payload = lastTickInfo
 			notifyToEveryone(noti, communicators)
+			if turnRemain == 0 {
+				if userFailCount[users[turnIndex]] < 1 {
+					// 1回目の失敗
+					waitingContinue = true
+					continueRemain = 30
+					userFailCount[users[turnIndex]]++
+				} else {
+					// 2回目以降の失敗
+					turnIndex = (turnIndex + 1) % len(users)
+					turnRemain = 20
+					lastChangeTurnInfo.PrevWord = prevWord
+					lastChangeTurnInfo.NextUserId = users[turnIndex]
+					noti.Payload = lastChangeTurnInfo
+					notifyToEveryone(noti, communicators)
+				}
+			}
 			break
 
 		case noti := <-toHub:
@@ -304,37 +307,35 @@ func manageGame(app *App, s *GameStates, groupId uint, startTime *time.Time, toH
 					prevWord = payload.Word
 					turnIndex = (turnIndex + 1) % len(users)
 					turnRemain = 20
-
 					lastChangeTurnInfo.PrevWord = prevWord
 					lastChangeTurnInfo.NextUserId = users[turnIndex]
 					noti.Payload = lastChangeTurnInfo
 					notifyToEveryone(noti, communicators)
 				} else {
 					// 失敗
-					waitingRetry = true
-					turnRemain = 20
-					retryConfirmed = make([]bool, len(users))
+					if userFailCount[noti.EmitterUser] < 1 {
+						// 1回目の失敗 (コンティニューできる)
+						waitingContinue = true
+						continueRemain = 30
+						userFailCount[noti.EmitterUser]++
+					} else {
+						// 2回目以降の失敗 (コンティニューできない)
+						turnIndex = (turnIndex + 1) % len(users)
+						turnRemain = 20
+						lastChangeTurnInfo.PrevWord = prevWord
+						lastChangeTurnInfo.NextUserId = users[turnIndex]
+						noti.Payload = lastChangeTurnInfo
+						notifyToEveryone(noti, communicators)
+					}
 				}
 				break
 
-			case IEConfirmRetry:
-				if !waitingRetry {
+			case IEConfirmContinue:
+				if !waitingContinue || noti.EmitterUser != users[turnIndex] {
 					break
 				}
-				hasNotConfirmedUsers := false
-				for i, u := range users {
-					if u == noti.EmitterUser {
-						retryConfirmed[i] = true
-						break
-					} else {
-						if !retryConfirmed[i] {
-							hasNotConfirmedUsers = true
-						}
-					}
-				}
-				if !hasNotConfirmedUsers {
-					waitingRetry = false
-				}
+				turnRemain += 10
+				waitingContinue = false
 				break
 
 			case IEInput:
@@ -467,9 +468,9 @@ func handleSocketConnection(app *App, c *gin.Context) {
 				toHub <- intNoti
 				break
 
-			case EventTypeConfirmRetry:
+			case EventTypeConfirmContinue:
 				intNoti.EmitterUser = userId
-				intNoti.Payload = IEConfirmRetry{}
+				intNoti.Payload = IEConfirmContinue{}
 				toHub <- intNoti
 				break
 
@@ -509,10 +510,11 @@ func handleSocketConnection(app *App, c *gin.Context) {
 				payload := EventPayload{
 					Type: EventTypeOnTick,
 					Data: map[string]interface{}{
-						"remainSec":     data.Remain,
-						"turnRemainSec": data.TurnRemain,
-						"finished":      data.Remain == 0,
-						"waitingRetry":  data.WaitingRetry,
+						"remainSec":       data.Remain,
+						"turnRemainSec":   data.TurnRemain,
+						"finished":        data.Remain == 0,
+						"waitingContinue": data.WaitingContinue,
+						"yourFailure":     data.FailingUser == userId,
 					},
 				}
 				if err := conn.WriteJSON(payload); err != nil {

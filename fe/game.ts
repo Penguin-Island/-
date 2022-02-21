@@ -216,18 +216,30 @@ addEventListener('load', () => {
                 }
             } else if (data['type'] == 'onTick') {
                 document.getElementById('countDown').innerText = data['data']['remainSec'];
+                document.getElementById('waitContinueIndicator').setAttribute('data-waiting', 'no');
 
-                if (data['data']['waitingRetry']) {
-                    if (!stillWaitingRetry) {
-                        bgm.pause();
-                        seAlarm.play();
-                        stillWaitingRetry = true;
+                if (data['data']['waitingContinue']) {
+                    if (data['data']['yourFailure']) {
+                        if (!stillWaitingRetry) {
+                            bgm.pause();
+                            seAlarm.play();
+                            stillWaitingRetry = true;
+                        }
+
+                        document
+                            .getElementById('failureOverlay')
+                            .setAttribute('data-activated', 'yes');
+                        document
+                            .getElementById('finishOverlay')
+                            .setAttribute('data-activated', 'no');
+
+                        (document.getElementById('confirmRetry') as HTMLInputElement).disabled =
+                            false;
+                    } else {
+                        document
+                            .getElementById('waitContinueIndicator')
+                            .setAttribute('data-waiting', 'yes');
                     }
-
-                    document.getElementById('failureOverlay').setAttribute('data-activated', 'yes');
-                    document.getElementById('finishOverlay').setAttribute('data-activated', 'no');
-
-                    (document.getElementById('confirmRetry') as HTMLInputElement).disabled = false;
                 } else if (data['data']['finished']) {
                     finished = true;
                     bgm.pause();
@@ -327,7 +339,7 @@ addEventListener('load', () => {
 
         (ev.target as HTMLInputElement).disabled = true;
 
-        sock.send(JSON.stringify({type: 'confirmRetry', data: {}}));
+        sock.send(JSON.stringify({type: 'confirmContinue', data: {}}));
     });
 
     document.getElementById('openTimeSettings').addEventListener('click', (ev) => {
