@@ -347,6 +347,11 @@ func manageGame(app *App, s *GameStates, groupId uint, startTime *time.Time, toH
 	}
 	ticker.Stop()
 
+	for _, u := range users {
+		if err := recordStat(app, u, userFailCount[u] == 0); err != nil {
+			log.Error(err)
+		}
+	}
 	// 成功
 
 deleteCommunicator:
