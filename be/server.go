@@ -164,8 +164,38 @@ func Run() {
 	rand.Seed(time.Now().Unix())
 
 	r := gin.Default()
+	r.Use(func(c *gin.Context) {
+		if c.Request.Method == http.MethodPost {
+			if c.GetHeader("Origin") == os.Getenv("ALLOWED_ORIGIN") {
+				return
+			}
+		} else if c.Request.Method == http.MethodGet {
+			if c.GetHeader("Upgrade") == "websocket" {
+				if c.GetHeader("Origin") == os.Getenv("ALLOWED_ORIGIN") {
+					return
+				}
+			} else {
+				return
+			}
+		} else {
+			return
+		}
+		c.Status(http.StatusBadGateway)
+		c.Header("Content-Type", "text/html; charset=utf-8")
+		c.Writer.WriteString(`<!doctype html>
+<html>
+<head>
+    <title>502 Bad Gateway</title>
+</head>
+<body>
+    <h1>502 Bad Gateway</h1>
+</body>
+</html>
+`)
+		c.Abort()
+	})
 
-	store, err := redisSess.NewStore(10, "tcp", redisUrl.Host, redisPassword, []byte(os.Getenv("PASSWORD_SECRET")))
+	store, err := redisSess.NewStore(10, "tcp", redisUrl.Host, redisPassword, []byte(os.Getenv("SESSION_SECRET")))
 	if err != nil {
 		log.Fatal(err)
 	}
