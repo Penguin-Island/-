@@ -1,11 +1,12 @@
 package be
 
 import (
+	"context"
 	"fmt"
 	"strconv"
 	"time"
 
-	"github.com/bradfitz/gomemcache/memcache"
+	"github.com/go-redis/redis/v8"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
@@ -35,16 +36,20 @@ func recordStat(app *App, userId uint, success bool) error {
 
 	// キャッシュを更新
 	cacheKey := fmt.Sprintf("nsuccess-%v", userId)
-	if _, err := app.memcached.Increment(cacheKey, 1); err != nil && err == memcache.ErrCacheMiss {
+	if err := app.redis.Get(context.Background(), cacheKey).Err(); err == redis.Nil {
 		if count, err := fetchSuccessCountFromDB(app, userId); err != nil {
 			log.Error(err)
 		} else {
-			if err := app.memcached.Set(&memcache.Item{Key: cacheKey, Value: []byte(strconv.Itoa(count))}); err != nil {
+			if err := app.redis.Set(context.Background(), cacheKey, count, 240*time.Hour).Err(); err != nil {
 				log.Error(err)
 			}
 		}
 	} else if err != nil {
 		log.Error(err)
+	} else {
+		if err := app.redis.Incr(context.Background(), cacheKey).Err(); err != nil {
+			log.Error(err)
+		}
 	}
 
 	return nil
@@ -52,20 +57,21 @@ func recordStat(app *App, userId uint, success bool) error {
 
 func invalidateStatCache(app *App, userId uint) {
 	statCacheKey := fmt.Sprintf("stat-%v", userId)
-	if err := app.memcached.Delete(statCacheKey); err != nil {
+	if err := app.redis.Del(context.Background(), statCacheKey).Err(); err != nil && err != redis.Nil {
 		log.Error(err)
 	}
 }
 
 func getSuccessCount(app *App, userId uint) (int, error) {
 	cacheKey := fmt.Sprintf("nsuccess-%v", userId)
-	if item, err := app.memcached.Get(cacheKey); err != nil && err == memcache.ErrCacheMiss {
+
+	if result, err := app.redis.Get(context.Background(), cacheKey).Result(); err == redis.Nil {
 		count, err := fetchSuccessCountFromDB(app, userId)
 		if err != nil {
 			return 0, err
 		}
 
-		if err := app.memcached.Set(&memcache.Item{Key: cacheKey, Value: []byte(strconv.Itoa(count))}); err != nil {
+		if err := app.redis.Set(context.Background(), cacheKey, count, 240*time.Hour).Err(); err != nil {
 			log.Error(err)
 		}
 
@@ -73,7 +79,7 @@ func getSuccessCount(app *App, userId uint) (int, error) {
 	} else if err != nil {
 		return 0, err
 	} else {
-		return strconv.Atoi(string(item.Value))
+		return strconv.Atoi(result)
 	}
 }
 

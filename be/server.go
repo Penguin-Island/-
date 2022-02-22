@@ -10,11 +10,11 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/gin-contrib/sessions"
-	"github.com/gin-contrib/sessions/memcached"
+	redisSess "github.com/gin-contrib/sessions/redis"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
+	"github.com/go-redis/redis/v8"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -34,7 +34,7 @@ type Member struct {
 type App struct {
 	db         *gorm.DB
 	gameStates GameStates
-	memcached  *memcache.Client
+	redis      *redis.Client
 }
 
 func NewApp() *App {
@@ -142,13 +142,19 @@ func Run() {
 		log.Fatal(err)
 	}
 	app.db = db
+	app.redis = redis.NewClient(&redis.Options{
+		Addr: "localhost:6379",
+	})
 
 	rand.Seed(time.Now().Unix())
 
 	r := gin.Default()
 
-	app.memcached = memcache.New("localhost:11211")
-	store := memcached.NewStore(app.memcached, "session-", []byte(""))
+	store, err := redisSess.NewStore(10, "tcp", "localhost:6379", "", []byte(""))
+	if err != nil {
+		log.Fatal(err)
+	}
+	redisSess.SetKeyPrefix(store, "session-")
 	r.Use(sessions.Sessions("session", store))
 
 	if isFlagEnabled(os.Args[1:], "noproxy") {
