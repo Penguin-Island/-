@@ -6,15 +6,17 @@
         <meta name="viewport" content="width=device-width" />
     </head>
     <body>
-        <form action="/" method="post">
+        <div id="errorBar" class="error-bar" data-activated="no"></div>
+
+        <form id="loginForm">
             <div class="h1">
                 <h1>おはトリ</h1>
             </div>
             <div class="id">
-                <label for="id">なまえ</label>
+                <label for="userName">なまえ</label>
             </div>
             <div class="text">
-                <input type="text" name="userName" id="id" />
+                <input type="text" name="userName" id="userName" />
             </div>
             <div class="password">
                 <label for="password">パスワード</label>

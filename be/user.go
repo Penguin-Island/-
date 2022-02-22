@@ -15,8 +15,9 @@ import (
 )
 
 const (
-	ErrMsgUserName = "ユーザー名は3文字以上で、アルファベットか数字、\"_\"と\"-\"を使うことができます"
-	ErrMsgPassword = "パスワードは10文字以上で、アルファベットと数字を含む必要があります"
+	ErrMsgUserName      = "ユーザー名は3文字以上で、アルファベットか数字、\"_\"と\"-\"を使うことができます"
+	ErrMsgPassword      = "パスワードは10文字以上で、アルファベットと数字を含む必要があります"
+	ErrMsgDuplicateUser = "ユーザー名は既に取得されています"
 )
 
 func isValidUserName(userName string) bool {
@@ -67,7 +68,7 @@ func registerUser(app *App, userName, password string) (uint, error) {
 }
 
 func handleRegisterUser(app *App, c *gin.Context) {
-	userName := c.PostForm("username")
+	userName := c.PostForm("userName")
 	password := c.PostForm("password")
 
 	if !isValidUserName(userName) {
@@ -88,7 +89,10 @@ func handleRegisterUser(app *App, c *gin.Context) {
 
 	userId, err := registerUser(app, userName, password)
 	if err != nil {
-		c.Status(http.StatusInternalServerError)
+		c.JSON(http.StatusNotAcceptable, map[string]interface{}{
+			"success": false,
+			"reason":  ErrMsgDuplicateUser,
+		})
 		return
 	}
 
@@ -99,6 +103,25 @@ func handleRegisterUser(app *App, c *gin.Context) {
 	c.JSON(http.StatusOK, map[string]interface{}{
 		"success": true,
 	})
+}
+
+func handleLogin(app *App, c *gin.Context) {
+	var member Member
+	userName := c.PostForm("userName")
+	password := c.PostForm("password")
+	if err := app.db.First(&member, "user_name = ?", userName).Error; err != nil {
+		log.Error(err)
+		c.Status(http.StatusUnauthorized)
+		return
+	}
+	if err := bcrypt.CompareHashAndPassword([]byte(member.Password), []byte(password)); err != nil {
+		log.Error(err)
+		c.Status(http.StatusUnauthorized)
+		return
+	}
+	sess := sessions.Default(c)
+	sess.Set("user_id", member.ID)
+	sess.Save()
 }
 
 type GroupInfoResp struct {

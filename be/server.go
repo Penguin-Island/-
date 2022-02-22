@@ -20,8 +20,6 @@ import (
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
-
-	"golang.org/x/crypto/bcrypt"
 )
 
 type Member struct {
@@ -230,24 +228,8 @@ func Run() {
 		staticHandler(c)
 	})
 
-	r.POST("/", func(c *gin.Context) {
-		var member Member
-		userName := c.PostForm("userName")
-		password := c.PostForm("password")
-		if err := db.First(&member, "user_name = ?", userName).Error; err != nil {
-			log.Error(err)
-			c.Redirect(http.StatusFound, "/")
-			return
-		}
-		if err := bcrypt.CompareHashAndPassword([]byte(member.Password), []byte(password)); err != nil {
-			log.Error(err)
-			c.Redirect(http.StatusFound, "/")
-			return
-		}
-		sess := sessions.Default(c)
-		sess.Set("user_id", member.ID)
-		sess.Save()
-		c.Redirect(http.StatusFound, "/game/")
+	r.POST("/users/login", func(c *gin.Context) {
+		handleLogin(app, c)
 	})
 
 	r.GET("/finish/", func(c *gin.Context) {

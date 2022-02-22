@@ -19,7 +19,7 @@ addEventListener('load', () => {
 
         fetch('/users/new', {
             method: 'POST',
-            body: `username=${encodeURI(userName)}&password=${encodeURI(password)}`,
+            body: `userName=${encodeURI(userName)}&password=${encodeURI(password)}`,
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },
