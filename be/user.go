@@ -1,10 +1,12 @@
 package be
 
 import (
+	"encoding/json"
 	"fmt"
 	"net/http"
 	"time"
 
+	"github.com/bradfitz/gomemcache/memcache"
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	log "github.com/sirupsen/logrus"
@@ -227,6 +229,16 @@ func handleGetStatistics(app *App, c *gin.Context) {
 	}
 	userId := iUserId.(uint)
 
+	cacheKey := fmt.Sprintf("stat-%v", userId)
+
+	if item, err := app.memcached.Get(cacheKey); err != nil && err != memcache.ErrCacheMiss {
+		log.Error(err)
+	} else if err == nil {
+		c.Header("Content-Type", "application/json; charset=utf-8")
+		c.Writer.Write(item.Value)
+		return
+	}
+
 	jst, err := time.LoadLocation("Asia/Tokyo")
 	if err != nil {
 		log.Error(err)
@@ -270,5 +282,17 @@ func handleGetStatistics(app *App, c *gin.Context) {
 
 	statistics := collectStats(statsData, wakeUpTime, user.CreatedAt, now, jst)
 
-	c.JSON(http.StatusOK, &statistics)
+	jsonData, err := json.Marshal(&statistics)
+	if err != nil {
+		log.Error(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	if err := app.memcached.Set(&memcache.Item{Key: cacheKey, Value: jsonData, Expiration: 60 * 60 * 24}); err != nil {
+		log.Error(err)
+	}
+
+	c.Header("Content-Type", "application/json; charset=utf-8")
+	c.Writer.Write(jsonData)
 }

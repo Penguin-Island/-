@@ -51,6 +51,10 @@ func recordStat(app *App, userId uint, success bool) error {
 }
 
 func invalidateStatCache(app *App, userId uint) {
+	statCacheKey := fmt.Sprintf("stat-%v", userId)
+	if err := app.memcached.Delete(statCacheKey); err != nil {
+		log.Error(err)
+	}
 }
 
 func getSuccessCount(app *App, userId uint) (int, error) {
