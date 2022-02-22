@@ -6,6 +6,16 @@ addEventListener('load', () => {
 
         const userName = (document.getElementById('name') as HTMLInputElement).value;
         const password = (document.getElementById('password') as HTMLInputElement).value;
+        const passwordConfirm = (document.getElementById('passwordConfirm') as HTMLInputElement)
+            .value;
+
+        const errorBar = document.getElementById('errorBar');
+        if (password !== passwordConfirm) {
+            errorBar.innerText = 'パスワードが一致しません';
+            errorBar.setAttribute('data-activated', 'yes');
+            return;
+        }
+        errorBar.setAttribute('data-activated', 'no');
 
         fetch('/users/new', {
             method: 'POST',
@@ -17,7 +27,6 @@ addEventListener('load', () => {
             .then((resp) => resp.json())
             .then((resp) => {
                 if (!resp['success']) {
-                    const errorBar = document.getElementById('errorBar');
                     errorBar.innerText = resp['reason'];
                     errorBar.setAttribute('data-activated', 'yes');
                     return;
@@ -25,7 +34,6 @@ addEventListener('load', () => {
                 location.href = '/game/';
             })
             .catch((err) => {
-                const errorBar = document.getElementById('errorBar');
                 errorBar.innerText = 'サーバーとの通信に失敗しました';
                 errorBar.setAttribute('data-activated', 'yes');
             });
