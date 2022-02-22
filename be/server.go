@@ -106,7 +106,7 @@ func initDatabase(verboseLog bool) (*gorm.DB, error) {
 		config.Logger = logger.Default.LogMode(logger.Info)
 	}
 
-	db, err := gorm.Open(postgres.Open(os.Getenv("DB_HOST")), &config)
+	db, err := gorm.Open(postgres.Open(os.Getenv("DATABASE_URL")), &config)
 	if err != nil {
 		return nil, err
 	}
