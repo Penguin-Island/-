@@ -13,4 +13,4 @@ FROM alpine:latest
 COPY --from=0 /build/be/cmd/ohatori/ohatori /ohatori
 COPY --from=1 /build/dist /dist/
 RUN apk --no-cache add curl tzdata
-ENTRYPOINT ["/ohatori"]
+CMD ["/ohatori"]
