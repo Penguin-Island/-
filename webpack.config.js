@@ -8,6 +8,11 @@ const env = process.env.NODE_ENV || 'development';
 module.exports = {
     mode: env,
     devtool: env === 'development' ? 'source-map' : false,
+    devServer: {
+        allowedHosts: [
+            '.ngrok.io',
+        ],
+    },
     entry: {
         index: './fe/index.ts',
         register: './fe/register.ts',
