@@ -5,6 +5,7 @@ import (
 	"io"
 	"math/rand"
 	"net/http"
+	"net/url"
 	"os"
 	"os/exec"
 	"time"
@@ -14,6 +15,7 @@ import (
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
+	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
@@ -33,6 +35,14 @@ type App struct {
 	db         *gorm.DB
 	gameStates GameStates
 	redis      *redis.Client
+}
+
+func getRedisURL() (*url.URL, error) {
+	url, err := url.Parse(os.Getenv("REDIS_URL"))
+	if err != nil {
+		return nil, err
+	}
+	return url, nil
 }
 
 func NewApp() *App {
@@ -93,14 +103,12 @@ func forwardToWebpack(c *gin.Context) {
 }
 
 func initDatabase(verboseLog bool) (*gorm.DB, error) {
-	dsn := "host=localhost user=postgres password= dbname=ohatori port=5432 sslmode=disable TimeZone=Asia/Tokyo"
-
 	config := gorm.Config{}
 	if verboseLog {
 		config.Logger = logger.Default.LogMode(logger.Info)
 	}
 
-	db, err := gorm.Open(postgres.Open(dsn), &config)
+	db, err := gorm.Open(postgres.Open(os.Getenv("DB_HOST")), &config)
 	if err != nil {
 		return nil, err
 	}
@@ -121,6 +129,11 @@ func initDatabase(verboseLog bool) (*gorm.DB, error) {
 }
 
 func Run() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Info("Error loading .env file (actual environment variables will be used)")
+	}
+
 	if isFlagEnabled(os.Args[1:], "release") {
 		gin.SetMode(gin.ReleaseMode)
 	} else {
@@ -136,15 +149,23 @@ func Run() {
 		log.Fatal(err)
 	}
 	app.db = db
+
+	redisUrl, err := url.Parse(os.Getenv("REDIS_URL"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	redisPassword, _ := redisUrl.User.Password()
+
 	app.redis = redis.NewClient(&redis.Options{
-		Addr: "localhost:6379",
+		Addr:     redisUrl.Host,
+		Password: redisPassword,
 	})
 
 	rand.Seed(time.Now().Unix())
 
 	r := gin.Default()
 
-	store, err := redisSess.NewStore(10, "tcp", "localhost:6379", "", []byte(""))
+	store, err := redisSess.NewStore(10, "tcp", redisUrl.Host, redisPassword, []byte(os.Getenv("PASSWORD_SECRET")))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -270,14 +291,5 @@ func Run() {
 		handleSetTime(app, c)
 	})
 
-	if err := r.Run("0.0.0.0:8000"); err != nil {
-		if !isFlagEnabled(os.Args[1:], "release") {
-			log.Println(err)
-			log.Println("fallback to :1333")
-
-			r.Run("0.0.0.0:1333")
-		} else {
-			log.Fatal(err)
-		}
-	}
+	log.Fatal(r.Run(fmt.Sprintf(":%s", os.Getenv("PORT"))))
 }
