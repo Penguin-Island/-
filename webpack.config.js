@@ -9,9 +9,7 @@ module.exports = {
     mode: env,
     devtool: env === 'development' ? 'source-map' : false,
     devServer: {
-        allowedHosts: [
-            '.ngrok.io',
-        ],
+        allowedHosts: ['.ngrok.io'],
     },
     entry: {
         index: './fe/index.ts',
