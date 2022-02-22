@@ -7,7 +7,6 @@ import (
 	"net/http"
 	"os"
 	"os/exec"
-	"strconv"
 	"time"
 
 	"github.com/gin-contrib/sessions"
@@ -25,10 +24,9 @@ import (
 
 type Member struct {
 	gorm.Model
-	PlayerTag string `gorm:"unique"`
-	UserName  string
-	Password  string
-	GroupId   uint
+	UserName string `gorm:"unique"`
+	Password string
+	GroupId  uint
 }
 
 type App struct {
@@ -92,10 +90,6 @@ func forwardToWebpack(c *gin.Context) {
 	}
 	c.Status(resp.StatusCode)
 	io.Copy(c.Writer, resp.Body)
-}
-
-func generatePlayerTag(userName string) string {
-	return userName + strconv.Itoa(rand.Intn(8999)+1000)
 }
 
 func initDatabase(verboseLog bool) (*gorm.DB, error) {
@@ -187,9 +181,9 @@ func Run() {
 
 	r.POST("/", func(c *gin.Context) {
 		var member Member
-		playerTag := c.PostForm("playerTag")
+		userName := c.PostForm("userName")
 		password := c.PostForm("password")
-		if err := db.First(&member, "player_tag = ?", playerTag).Error; err != nil {
+		if err := db.First(&member, "user_name = ?", userName).Error; err != nil {
 			log.Error(err)
 			c.Redirect(http.StatusFound, "/")
 			return

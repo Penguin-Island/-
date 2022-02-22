@@ -69,3 +69,19 @@ a {
 .button2:hover {
     background-color: goldenrod;
 }
+
+.error-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    background-color: #ff3e30;
+    width: 100vw;
+    font-size: 18px;
+
+    &[data-activated='yes'] {
+        display: block;
+    }
+    &[data-activated='no'] {
+        display: none;
+    }
+}

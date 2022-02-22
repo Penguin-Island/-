@@ -56,7 +56,7 @@ func handleInvite(app *App, c *gin.Context) {
 		}
 
 		var invitee Member
-		if err := tx.First(&invitee, "player_tag = ?", inviteeTag).Error; err != nil {
+		if err := tx.First(&invitee, "user_name = ?", inviteeTag).Error; err != nil {
 			log.Error(err)
 			c.AbortWithStatus(http.StatusBadRequest)
 			return err
@@ -128,7 +128,7 @@ func handleGetInvitations(app *App, c *gin.Context) {
 
 		invitationResp = append(invitationResp, InvitationResp{
 			Id:      inv.ID,
-			Inviter: inviter.PlayerTag,
+			Inviter: inviter.UserName,
 		})
 	}
 

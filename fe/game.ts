@@ -31,7 +31,6 @@ const showUserInfo = () => {
         .then((resp) => resp.json())
         .then((resp) => {
             document.getElementById('playerName').innerText = resp['userName'];
-            document.getElementById('playerId').innerText = resp['playerTag'];
 
             document.getElementById('successRate').innerText = resp['successRate'];
             if (resp['joinedGroup']) {
@@ -375,18 +374,18 @@ addEventListener('load', () => {
             });
     });
 
-    let playerTag = null;
+    let userName = null;
     document.getElementById('searchFriendButton').addEventListener('click', (ev) => {
         ev.preventDefault();
 
-        playerTag = (document.getElementById('friendNameInput') as HTMLInputElement).value;
-        fetch(`/users/find?playerTag=${encodeURI(playerTag)}`)
+        userName = (document.getElementById('friendNameInput') as HTMLInputElement).value;
+        fetch(`/users/find?userName=${encodeURI(userName)}`)
             .then((resp) => {
                 if (resp.status != 302) {
                     document.getElementById('friendInviteMessage').innerText = '見つかりません';
                     return;
                 }
-                document.getElementById('friendSearchUserName').innerText = playerTag;
+                document.getElementById('friendSearchUserName').innerText = userName;
                 document
                     .getElementById('friendSearchResultContainer')
                     .setAttribute('data-found', 'yes');
@@ -401,7 +400,7 @@ addEventListener('load', () => {
     document.getElementById('friendSearchInviteButton').addEventListener('click', () => {
         fetch('/groups/invite', {
             method: 'post',
-            body: `player=${encodeURI(playerTag)}`,
+            body: `player=${encodeURI(userName)}`,
             headers: {
                 'Content-Type': 'application/x-www-form-urlencoded',
             },

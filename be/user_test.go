@@ -179,14 +179,11 @@ func Test_registerUser(t *testing.T) {
 		db: db,
 	}
 
-	for i := 0; i < 100; i++ {
-		_, acceptable, err := registerUser(app, "hoge", "duos^aev6K")
-		if err != nil {
-			t.Fatal(err)
-		}
-		if !acceptable {
-			t.Fatal("Unexpected: !acceptable")
-		}
+	if _, err := registerUser(app, "hoge", "duos^aev6K"); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := registerUser(app, "hoge", "duos^aev6K"); err == nil {
+		t.Fatal("Duplicate user name should be error")
 	}
 
 	var members []Member

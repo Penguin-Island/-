@@ -14,6 +14,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 )
 
+const (
+	ErrMsgUserName = "ユーザー名は3文字以上で、アルファベットか数字、\"_\"と\"-\"を使うことができます"
+	ErrMsgPassword = "パスワードは10文字以上で、アルファベットと数字を含む必要があります"
+)
+
 func isValidUserName(userName string) bool {
 	if len(userName) < 3 {
 		return false
@@ -44,52 +49,56 @@ func isValidPassword(password string) bool {
 	return hasAlpha && hasDigit
 }
 
-func registerUser(app *App, userName, password string) (uint, bool, error) {
-	if !(isValidUserName(userName) && isValidPassword(password)) {
-		return 0, false, nil
-	}
-
+func registerUser(app *App, userName, password string) (uint, error) {
 	hashed, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
-		return 0, false, err
+		return 0, err
 	}
 
 	member := Member{
-		PlayerTag: generatePlayerTag(userName),
-		UserName:  userName,
-		Password:  string(hashed),
-	}
-	for i := 0; i < 100; i++ {
-		if err = app.db.Create(&member).Error; err != nil {
-			log.Println(err)
-			member.PlayerTag = generatePlayerTag(userName)
-			continue
-		}
-		break
+		UserName: userName,
+		Password: string(hashed),
 	}
 
-	if err != nil {
-		return 0, true, err
+	if err := app.db.Create(&member).Error; err != nil {
+		return 0, err
 	}
-	return member.ID, true, nil
+	return member.ID, nil
 }
 
 func handleRegisterUser(app *App, c *gin.Context) {
 	userName := c.PostForm("username")
 	password := c.PostForm("password")
 
-	userId, acceptable, err := registerUser(app, userName, password)
-	if !acceptable {
-		c.Redirect(http.StatusFound, "/register/")
-	} else if err != nil {
+	if !isValidUserName(userName) {
+		c.JSON(http.StatusNotAcceptable, map[string]interface{}{
+			"success": false,
+			"reason":  ErrMsgUserName,
+		})
+		return
+	}
+
+	if !isValidPassword(password) {
+		c.JSON(http.StatusNotAcceptable, map[string]interface{}{
+			"success": false,
+			"reason":  ErrMsgPassword,
+		})
+		return
+	}
+
+	userId, err := registerUser(app, userName, password)
+	if err != nil {
 		c.Status(http.StatusInternalServerError)
+		return
 	}
 
 	sess := sessions.Default(c)
 	sess.Set("user_id", userId)
 	sess.Save()
 
-	c.Redirect(http.StatusFound, "/game/")
+	c.JSON(http.StatusOK, map[string]interface{}{
+		"success": true,
+	})
 }
 
 type GroupInfoResp struct {
@@ -99,7 +108,6 @@ type GroupInfoResp struct {
 
 type UserInfoResp struct {
 	UserName    string        `json:"userName"`
-	PlayerTag   string        `json:"playerTag"`
 	JoinedGroup bool          `json:"joinedGroup"`
 	GroupInfo   GroupInfoResp `json:"groupInfo"`
 	SuccessRate int           `json:"successRate"`
@@ -139,7 +147,6 @@ func handleGetUserInfo(app *App, c *gin.Context) {
 
 	userInfo := UserInfoResp{
 		UserName:    user.UserName,
-		PlayerTag:   user.PlayerTag,
 		JoinedGroup: user.GroupId != 0,
 		SuccessRate: successRate,
 	}
@@ -179,7 +186,7 @@ func handleGetUserInfo(app *App, c *gin.Context) {
 		}
 		for _, memb := range groupMembers {
 			if memb.ID != userId {
-				userInfo.GroupInfo.Members = append(userInfo.GroupInfo.Members, memb.PlayerTag)
+				userInfo.GroupInfo.Members = append(userInfo.GroupInfo.Members, memb.UserName)
 			}
 		}
 	}
@@ -198,13 +205,14 @@ func handleFindUser(app *App, c *gin.Context) {
 		return
 	}
 
-	tag, ok := c.GetQuery("playerTag")
+	tag, ok := c.GetQuery("userName")
 	if !ok {
 		c.AbortWithStatus(http.StatusBadRequest)
+		return
 	}
 
 	var user Member
-	if err := app.db.First(&user, "player_tag = ?", tag).Error; err != nil {
+	if err := app.db.First(&user, "user_name = ?", tag).Error; err != nil {
 		c.Status(http.StatusNotFound)
 		return
 	}
