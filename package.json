@@ -8,7 +8,7 @@
         "dev": "webpack --mode=development",
         "prod": "webpack --mode=production",
         "_server": "webpack-dev-server",
-        "start": "go run be/cmd/ohatori/main.go noproxy",
+        "start": "go run be/cmd/ohatori/main.go debug noproxy",
         "server": "npm run start",
         "fmt": "prettier --write ."
     },

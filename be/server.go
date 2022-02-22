@@ -134,17 +134,17 @@ func Run() {
 		log.Info("Error loading .env file (actual environment variables will be used)")
 	}
 
-	if isFlagEnabled(os.Args[1:], "release") {
-		gin.SetMode(gin.ReleaseMode)
-	} else {
+	if isFlagEnabled(os.Args[1:], "debug") {
 		gin.SetMode(gin.DebugMode)
+	} else {
+		gin.SetMode(gin.ReleaseMode)
 	}
 
 	log.SetReportCaller(true)
 
 	app := NewApp()
 
-	db, err := initDatabase(!isFlagEnabled(os.Args[1:], "release"))
+	db, err := initDatabase(isFlagEnabled(os.Args[1:], "debug"))
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -209,15 +209,15 @@ func Run() {
 	}
 
 	var staticHandler func(*gin.Context)
-	if isFlagEnabled(os.Args[1:], "release") {
-		staticHandler = static.Serve("/", static.LocalFile("dist", false))
-		r.NoRoute(staticHandler)
-	} else {
+	if isFlagEnabled(os.Args[1:], "debug") {
 		staticHandler = forwardToWebpack
 		if err := launchWebpackServer(!isFlagEnabled(os.Args[1:], "nonpminstall")); err != nil {
 			log.Fatal(err)
 		}
 		r.NoRoute(forwardToWebpack)
+	} else {
+		staticHandler = static.Serve("/", static.LocalFile("dist", false))
+		r.NoRoute(staticHandler)
 	}
 
 	r.GET("/", func(c *gin.Context) {
