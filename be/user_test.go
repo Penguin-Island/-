@@ -191,8 +191,8 @@ func Test_registerUser(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	if len(members) != 100 {
-		t.Errorf("Not all members inserted: expectedLen=%v, actualLen=%v", 100, len(members))
+	if len(members) != 1 {
+		t.Errorf("User name is not unique: expectedLen=%v, actualLen=%v", 1, len(members))
 	}
 
 	if err := db.Migrator().DropTable(&Member{}); err != nil {
