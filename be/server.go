@@ -132,7 +132,9 @@ func Run() {
 		log.Info("Error loading .env file (actual environment variables will be used)")
 	}
 
-	if isFlagEnabled(os.Args[1:], "debug") {
+	isDebugMode := isFlagEnabled(os.Args[1:], "debug")
+
+	if isDebugMode {
 		gin.SetMode(gin.DebugMode)
 	} else {
 		gin.SetMode(gin.ReleaseMode)
@@ -142,7 +144,7 @@ func Run() {
 
 	app := NewApp()
 
-	db, err := initDatabase(isFlagEnabled(os.Args[1:], "debug"))
+	db, err := initDatabase(isDebugMode)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -162,6 +164,24 @@ func Run() {
 	rand.Seed(time.Now().Unix())
 
 	r := gin.Default()
+
+	r.Use(func(c *gin.Context) {
+		if !isDebugMode && c.GetHeader("X-Forwarded-Proto") == "http" {
+			allowedUrl, err := url.Parse(os.Getenv("ALLOWED_ORIGIN"))
+			if err != nil {
+				log.Error(err)
+				c.AbortWithStatus(http.StatusInternalServerError)
+				return
+			}
+
+			url := c.Request.URL
+			url.Scheme = "https"
+			url.Host = allowedUrl.Host
+			c.Redirect(http.StatusMovedPermanently, url.String())
+			c.Abort()
+		}
+	})
+
 	r.Use(func(c *gin.Context) {
 		if c.Request.Method == http.MethodPost {
 			if c.GetHeader("Origin") == os.Getenv("ALLOWED_ORIGIN") {
@@ -207,7 +227,7 @@ func Run() {
 	}
 
 	var staticHandler func(*gin.Context)
-	if isFlagEnabled(os.Args[1:], "debug") {
+	if isDebugMode {
 		staticHandler = forwardToWebpack
 		if err := launchWebpackServer(!isFlagEnabled(os.Args[1:], "nonpminstall")); err != nil {
 			log.Fatal(err)
