@@ -167,8 +167,7 @@ func areAllMembersJoined(app *App, users []uint, groupId uint) (bool, error) {
 
 // ゲーム全体の進行を管理する
 func manageGame(app *App, s *GameStates, groupId uint, startTime *time.Time, toHub chan InternalNotification) {
-	// remain := 300
-	remain := 20
+	remain := 300
 	turnRemain := 20
 	continueRemain := 30
 	waitingContinue := false
