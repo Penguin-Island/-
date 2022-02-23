@@ -280,7 +280,7 @@ func handleGetStatistics(app *App, c *gin.Context) {
 	}
 	userId := iUserId.(uint)
 
-	cacheKey := fmt.Sprintf("stat-%v", userId)
+	cacheKey := fmt.Sprintf("stat:%v", userId)
 
 	if result, err := app.redis.Get(context.Background(), cacheKey).Result(); err != nil && err != redis.Nil {
 		log.Error(err)

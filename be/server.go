@@ -197,7 +197,7 @@ func Run() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	redisSess.SetKeyPrefix(store, "session-")
+	redisSess.SetKeyPrefix(store, "session:")
 	r.Use(sessions.Sessions("session", store))
 
 	if isFlagEnabled(os.Args[1:], "noproxy") {
