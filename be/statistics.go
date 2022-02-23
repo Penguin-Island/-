@@ -100,10 +100,6 @@ func getDaysAfterSignUp(app *App, userId uint) (int, error) {
 }
 
 func collectStats(stats []Statistics, wakeUpTime, signUpTime, until time.Time, tz *time.Location) []StatisticsResp {
-	if len(stats) == 0 {
-		return make([]StatisticsResp, 0)
-	}
-
 	until = until.In(tz)
 	signUpTime = signUpTime.In(tz)
 	wakeUpTime = wakeUpTime.In(tz)

@@ -71,14 +71,6 @@ func Test_collectStats(t *testing.T) {
 		result     []StatisticsResp
 	}{
 		{
-			name:       "empty",
-			stats:      []Statistics{},
-			wakeUpTime: time.Date(2022, 2, 16, 7, 15, 0, 0, jst).In(time.UTC),
-			signUpTime: time.Date(2022, 2, 1, 10, 5, 5, 0, jst).In(time.UTC),
-			until:      time.Date(2022, 2, 16, 7, 21, 0, 0, jst),
-			result:     []StatisticsResp{},
-		},
-		{
 			name: "simple",
 			stats: []Statistics{
 				{
@@ -577,6 +569,43 @@ func Test_collectStats(t *testing.T) {
 					Month:   2,
 					Day:     13,
 					Success: true,
+				},
+			},
+		},
+		{
+			name: "immature account 5",
+			stats: []Statistics{
+				{
+					Model: gorm.Model{
+						CreatedAt: time.Date(2022, 2, 16, 7, 20, 10, 0, jst).In(time.UTC),
+					},
+					Success: true,
+				},
+			},
+			wakeUpTime: time.Date(2022, 2, 16, 7, 15, 0, 0, jst).In(time.UTC),
+			signUpTime: time.Date(2022, 2, 16, 7, 10, 5, 0, jst).In(time.UTC),
+			until:      time.Date(2022, 2, 16, 7, 23, 0, 0, jst),
+			result: []StatisticsResp{
+				{
+					Year:    2022,
+					Month:   2,
+					Day:     16,
+					Success: true,
+				},
+			},
+		},
+		{
+			name:       "immature account 6",
+			stats:      []Statistics{},
+			wakeUpTime: time.Date(2022, 2, 16, 7, 15, 0, 0, jst).In(time.UTC),
+			signUpTime: time.Date(2022, 2, 16, 7, 10, 5, 0, jst).In(time.UTC),
+			until:      time.Date(2022, 2, 16, 7, 23, 0, 0, jst),
+			result: []StatisticsResp{
+				{
+					Year:    2022,
+					Month:   2,
+					Day:     16,
+					Success: false,
 				},
 			},
 		},
