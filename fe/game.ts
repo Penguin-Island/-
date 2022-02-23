@@ -269,6 +269,16 @@ addEventListener('load', () => {
                     startButton.innerText = 'しりとり開始';
                     startButton.disabled = false;
                 }
+            } else if (data['type'] == 'onFailure') {
+                finished = true;
+                startButton.innerText = 'しりとり開始';
+                startButton.disabled = false;
+
+                if (!started) {
+                    document.getElementById('alertMessage').innerText =
+                        '対戦相手が来なかったため、キャンセルされました';
+                    document.getElementById('alert').setAttribute('data-activated', 'yes');
+                }
             } else if (data['type'] == 'onInput') {
                 if (!isTyping || !isInputFocused) {
                     const input = document.getElementById('wordInput') as HTMLInputElement;

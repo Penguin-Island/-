@@ -163,9 +163,28 @@ func handleGetUserInfo(app *App, c *gin.Context) {
 		return
 	}
 	successCount, err := getSuccessCount(app, userId)
-	successRate := 100
-	if daysAfterSignUp != 0 {
-		successRate = successCount * 100 / daysAfterSignUp
+	if err != nil {
+		log.Error(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	failureCount, err := getFailureCount(app, userId)
+	if err != nil {
+		log.Error(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+
+	nTrial := successCount + failureCount
+	if nTrial < daysAfterSignUp {
+		nTrial = daysAfterSignUp
+	}
+
+	var successRate int
+	if nTrial == 0 {
+		successRate = 100
+	} else {
+		successRate = successCount * 100 / nTrial
 	}
 
 	userInfo := UserInfoResp{

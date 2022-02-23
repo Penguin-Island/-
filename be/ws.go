@@ -133,7 +133,14 @@ func appendUser(users []uint, userId uint) []uint {
 
 func notifyToEveryone(n InternalNotification, comminucators []chan InternalNotification) {
 	for _, c := range comminucators {
-		go func(c chan InternalNotification) { c <- n }(c)
+		go func(c chan InternalNotification) {
+			defer func() {
+				if err := recover(); err != nil {
+					log.Error(err)
+				}
+			}()
+			c <- n
+		}(c)
 	}
 }
 
@@ -160,7 +167,8 @@ func areAllMembersJoined(app *App, users []uint, groupId uint) (bool, error) {
 
 // ゲーム全体の進行を管理する
 func manageGame(app *App, s *GameStates, groupId uint, startTime *time.Time, toHub chan InternalNotification) {
-	remain := 300
+	// remain := 300
+	remain := 20
 	turnRemain := 20
 	continueRemain := 30
 	waitingContinue := false
@@ -174,7 +182,7 @@ func manageGame(app *App, s *GameStates, groupId uint, startTime *time.Time, toH
 	lastTickInfo := IETick{}
 	lastChangeTurnInfo := IEChangeTurn{}
 	ticker := time.NewTicker(11 * time.Minute)
-	startTimer := time.NewTimer(startTime.Add(5 * time.Minute).Sub(time.Now()))
+	startTimer := time.NewTimer(startTime.Add(6 * time.Minute).Sub(time.Now()))
 	for remain >= 0 {
 		select {
 		case <-startTimer.C:
@@ -193,6 +201,7 @@ func manageGame(app *App, s *GameStates, groupId uint, startTime *time.Time, toH
 				notifyToEveryone(noti, communicators)
 				if continueRemain == 0 {
 					waitingContinue = false
+					userFailCount[users[turnIndex]]++
 				}
 				break
 			}
@@ -290,6 +299,7 @@ func manageGame(app *App, s *GameStates, groupId uint, startTime *time.Time, toH
 				}
 				for i, c := range communicators {
 					if c == payload.Channel {
+						close(communicators[i])
 						communicators[i] = communicators[len(communicators)-1]
 						communicators = communicators[:len(communicators)-1]
 						break
@@ -298,8 +308,12 @@ func manageGame(app *App, s *GameStates, groupId uint, startTime *time.Time, toH
 				break
 
 			case IESendWord:
+				if waitingContinue {
+					log.Error("Recieved word while waiting continue")
+					break
+				}
 				if noti.EmitterUser != users[turnIndex] {
-					log.Warn("Recieved from non-turn user")
+					log.Error("Recieved word from non-turn user")
 					break
 				}
 				if shiritori.IsValidShiritori(prevWord, payload.Word) {
@@ -317,7 +331,6 @@ func manageGame(app *App, s *GameStates, groupId uint, startTime *time.Time, toH
 						// 1回目の失敗 (コンティニューできる)
 						waitingContinue = true
 						continueRemain = 30
-						userFailCount[noti.EmitterUser]++
 					} else {
 						// 2回目以降の失敗 (コンティニューできない)
 						turnIndex = (turnIndex + 1) % len(users)
@@ -327,6 +340,7 @@ func manageGame(app *App, s *GameStates, groupId uint, startTime *time.Time, toH
 						noti.Payload = lastChangeTurnInfo
 						notifyToEveryone(noti, communicators)
 					}
+					userFailCount[noti.EmitterUser]++
 				}
 				break
 
@@ -339,6 +353,9 @@ func manageGame(app *App, s *GameStates, groupId uint, startTime *time.Time, toH
 				break
 
 			case IEInput:
+				if waitingContinue || noti.EmitterUser != users[turnIndex] {
+					break
+				}
 				notifyToEveryone(noti, communicators)
 				break
 			}
@@ -346,9 +363,12 @@ func manageGame(app *App, s *GameStates, groupId uint, startTime *time.Time, toH
 		}
 	}
 	ticker.Stop()
+	startTimer.Stop()
 
+	log.Info(len(users))
 	for _, u := range users {
-		if err := recordStat(app, u, userFailCount[u] == 0); err != nil {
+		log.WithField("userId", u).WithField("failCount", userFailCount[u]).Info()
+		if err := recordStat(app, u, userFailCount[u] < 2); err != nil {
 			log.Error(err)
 		}
 	}
@@ -360,6 +380,12 @@ deleteCommunicator:
 	}
 
 	log.Info("Deleting communicator")
+
+	for _, c := range communicators {
+		close(c)
+	}
+	close(toHub)
+
 	s.gamesMu.Lock()
 	defer s.gamesMu.Unlock()
 	delete(s.communicators, groupId)
@@ -367,6 +393,12 @@ deleteCommunicator:
 
 // ゲームに接続する
 func (s *GameStates) joinGame(app *App, startTime *time.Time, groupId uint, userId uint) (chan InternalNotification, chan InternalNotification) {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Error(err)
+		}
+	}()
+
 	s.gamesMu.Lock()
 	defer s.gamesMu.Unlock()
 	toHub, ok := s.communicators[groupId]
@@ -389,6 +421,12 @@ func (s *GameStates) joinGame(app *App, startTime *time.Time, groupId uint, user
 
 // ゲームから切断する
 func (s *GameStates) unjoinGame(userId uint, notifier chan InternalNotification, toHub chan InternalNotification) {
+	defer func() {
+		if err := recover(); err != nil {
+			log.Error(err)
+		}
+	}()
+
 	noti := InternalNotification{}
 	noti.EmitterUser = userId
 	noti.Payload = IEUnjoinMember{
@@ -448,6 +486,12 @@ func handleSocketConnection(app *App, c *gin.Context) {
 	finishChan := make(chan struct{})
 	// 読む側 (イベントを hub にディスパッチするだけ)
 	go func() {
+		defer func() {
+			if err := recover(); err != nil {
+				log.Error(err)
+			}
+		}()
+
 		for {
 			var ev EventPayload
 			if err := conn.ReadJSON(&ev); err != nil {
@@ -560,6 +604,7 @@ func handleSocketConnection(app *App, c *gin.Context) {
 				break
 
 			case IEFailure:
+				log.Info("failure")
 				payload := EventPayload{
 					Type: EventTypeOnFailure,
 					Data: map[string]interface{}{},

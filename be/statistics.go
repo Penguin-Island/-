@@ -25,11 +25,15 @@ func fetchSuccessCountFromDB(app *App, userId uint) (int, error) {
 	return int(successCount), nil
 }
 
-func recordStat(app *App, userId uint, success bool) error {
-	if !success {
-		return nil
+func fetchFailureCountFromDB(app *App, userId uint) (int, error) {
+	var failureCount int64
+	if err := app.db.Model(&Statistics{}).Where("user_id = ? AND success = ?", userId, false).Count(&failureCount).Error; err != nil {
+		return 0, err
 	}
+	return int(failureCount), nil
+}
 
+func recordStat(app *App, userId uint, success bool) error {
 	if err := app.db.Create(&Statistics{UserId: userId, Success: success}).Error; err != nil {
 		return err
 	}
@@ -83,6 +87,27 @@ func getSuccessCount(app *App, userId uint) (int, error) {
 	}
 }
 
+func getFailureCount(app *App, userId uint) (int, error) {
+	cacheKey := fmt.Sprintf("nfailure-%v", userId)
+
+	if result, err := app.redis.Get(context.Background(), cacheKey).Result(); err == redis.Nil {
+		count, err := fetchFailureCountFromDB(app, userId)
+		if err != nil {
+			return 0, err
+		}
+
+		if err := app.redis.Set(context.Background(), cacheKey, count, 240*time.Hour).Err(); err != nil {
+			log.Error(err)
+		}
+
+		return count, nil
+	} else if err != nil {
+		return 0, err
+	} else {
+		return strconv.Atoi(result)
+	}
+}
+
 func durationDays(from, to time.Time) int {
 	diff := to.Sub(from)
 	return int(diff.Hours()) / 24
@@ -96,7 +121,7 @@ func getDaysAfterSignUp(app *App, userId uint) (int, error) {
 
 	registrationDate := user.CreatedAt
 	now := time.Now()
-	return durationDays(registrationDate, now), nil
+	return durationDays(registrationDate, now) + 1, nil
 }
 
 func collectStats(stats []Statistics, wakeUpTime, signUpTime, until time.Time, tz *time.Location) []StatisticsResp {
