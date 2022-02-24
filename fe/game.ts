@@ -232,6 +232,7 @@ addEventListener('load', () => {
                             .getElementById('finishOverlay')
                             .setAttribute('data-activated', 'no');
 
+                        document.getElementById('continueCountDown').innerText = data['data']['turnRemainSec'];
                         (document.getElementById('confirmRetry') as HTMLInputElement).disabled =
                             false;
                     } else {

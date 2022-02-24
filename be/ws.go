@@ -194,7 +194,7 @@ func manageGame(app *App, s *GameStates, groupId uint, startTime *time.Time, toH
 			if waitingContinue {
 				continueRemain--
 				lastTickInfo.Remain = remain
-				lastTickInfo.TurnRemain = turnRemain
+				lastTickInfo.TurnRemain = continueRemain
 				lastTickInfo.WaitingContinue = true
 				noti.Payload = lastTickInfo
 				notifyToEveryone(noti, communicators)

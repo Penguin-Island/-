@@ -280,19 +280,9 @@ body {
             display: flex;
         }
 
-        .message {
+        .continue-count-down {
             font-size: 150px;
-
-            span {
-                display: block;
-
-                &:nth-child(1) {
-                    color: black;
-                }
-                &:nth-child(2) {
-                    color: #2f5597;
-                }
-            }
+            text-align: center;
         }
 
         .confirm-retry {
