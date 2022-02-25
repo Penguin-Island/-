@@ -6,6 +6,7 @@ import (
 	"strconv"
 	"time"
 
+	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
@@ -174,4 +175,7 @@ func collectStats(stats []Statistics, wakeUpTime, signUpTime, until time.Time, t
 	}
 
 	return result
+}
+
+func handleGetWeeklyStats(app *App, c *gin.Context) {
 }

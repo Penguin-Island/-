@@ -295,8 +295,12 @@ func Run() {
 		handleGetUserInfo(app, c)
 	})
 
-	r.GET("/users/statistics", func(c *gin.Context) {
+	r.GET("/users/statistics/overview", func(c *gin.Context) {
 		handleGetStatistics(app, c)
+	})
+
+	r.GET("/users/statistics/weekly", func(c *gin.Context) {
+		handleGetWeeklyStatistics(app, c)
 	})
 
 	r.POST("/groups/invite", func(c *gin.Context) {

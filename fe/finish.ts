@@ -1,7 +1,7 @@
 import './finish.scss';
 
 addEventListener('load', () => {
-    fetch('/users/statistics')
+    fetch('/users/statistics/overview')
         .then((resp) => resp.json())
         .then((data) => {
             if (data === 0) {
