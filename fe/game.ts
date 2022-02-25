@@ -202,7 +202,8 @@ addEventListener('load', () => {
                 const input = document.getElementById('wordInput') as HTMLInputElement;
                 input.value = '';
 
-                document.getElementById('prevWord').innerText = data['data']['prevAnswer'];
+                document.getElementById('prevPrefix').innerText = data['data']['prevPrefix'];
+                document.getElementById('prevSuffix').innerText = data['data']['prevSuffix'];
 
                 const yourTurn = data['data']['yourTurn'];
                 document.getElementById('turn').innerText = yourTurn ? 'あなたの番' : '相手の番';

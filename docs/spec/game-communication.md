@@ -76,7 +76,8 @@
 
 答えが入力され、ターンが変わったときに発生します。
 
-- `prevAnswer`: 直前に答えられた単語
+- `prevPrefix`: 直前に答えられた単語の最後の音以外の文字列
+- `prevSuffix`: 直前に答えられた単語の最後の音の文字列
 - `yourTurn`: 自分の番かどうか
 
 ペイロード例:
@@ -84,7 +85,8 @@
 {
     "type": "onChangeTurn",
     "data": {
-        "prevAnswer": "はな",
+        "prevPrefix": "は",
+        "prevSuffix": "な",
         "yourTurn", true
     }
 }

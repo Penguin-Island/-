@@ -331,3 +331,118 @@ func Test_IsValidShiritori(t *testing.T) {
 		})
 	}
 }
+
+func Test_GetSuffix(t *testing.T) {
+	testcases := []struct {
+		name   string
+		input  string
+		result string
+	}{
+		{
+			name:   "normal 1",
+			input:  "あい",
+			result: "い",
+		},
+		{
+			name:   "normal 2",
+			input:  "ほげ",
+			result: "げ",
+		},
+		{
+			name:   "long",
+			input:  "さー",
+			result: "あ",
+		},
+		{
+			name:   "long 2",
+			input:  "しゃー",
+			result: "あ",
+		},
+		{
+			name:   "small 1",
+			input:  "しゃ",
+			result: "しゃ",
+		},
+		{
+			name:   "small 2",
+			input:  "ばぁ",
+			result: "ばぁ",
+		},
+		{
+			name:   "one char",
+			input:  "あ",
+			result: "あ",
+		},
+		{
+			name:   "multi small",
+			input:  "しゃっ",
+			result: "しゃっ",
+		},
+	}
+	for _, testcase := range testcases {
+		result := GetSuffix(testcase.input)
+		if result != testcase.result {
+			t.Errorf("Unexpected result for %s: expected=%v, actual=%v\n", testcase.input, testcase.result, result)
+		}
+	}
+}
+
+func Test_GetPrefix(t *testing.T) {
+	testcases := []struct {
+		name   string
+		input  string
+		result string
+	}{
+		{
+			name:   "normal 1",
+			input:  "あい",
+			result: "あ",
+		},
+		{
+			name:   "normal 2",
+			input:  "ほげ",
+			result: "ほ",
+		},
+		{
+			name:   "long",
+			input:  "さー",
+			result: "さ",
+		},
+		{
+			name:   "long 2",
+			input:  "しゃー",
+			result: "しゃ",
+		},
+		{
+			name:   "long 2",
+			input:  "しゃーー",
+			result: "しゃ",
+		},
+		{
+			name:   "small 1",
+			input:  "しゃ",
+			result: "",
+		},
+		{
+			name:   "small 2",
+			input:  "ばぁ",
+			result: "",
+		},
+		{
+			name:   "one char",
+			input:  "あ",
+			result: "",
+		},
+		{
+			name:   "multi small",
+			input:  "しゃっ",
+			result: "",
+		},
+	}
+	for _, testcase := range testcases {
+		result := GetPrefix(testcase.input)
+		if result != testcase.result {
+			t.Errorf("Unexpected result for %s: expected=%v, actual=%v\n", testcase.input, testcase.result, result)
+		}
+	}
+}

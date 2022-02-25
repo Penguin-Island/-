@@ -335,10 +335,10 @@ func handleGetStatistics(app *App, c *gin.Context) {
 		wakeUpTime = time.Date(now.Year(), now.Month(), now.Day(), savedTime.Hour(), savedTime.Minute(), 0, 0, time.UTC).In(jst)
 		//TODO: 雑すぎるのでなんとかする
 		if wakeUpTime.Day() != now.Day() {
-			wakeUpTime = time.Date(now.Year(), now.Month(), now.Day() + 1, savedTime.Hour(), savedTime.Minute(), 0, 0, time.UTC).In(jst)
+			wakeUpTime = time.Date(now.Year(), now.Month(), now.Day()+1, savedTime.Hour(), savedTime.Minute(), 0, 0, time.UTC).In(jst)
 		}
 		if wakeUpTime.Day() != now.Day() {
-			wakeUpTime = time.Date(now.Year(), now.Month(), now.Day() - 1, savedTime.Hour(), savedTime.Minute(), 0, 0, time.UTC).In(jst)
+			wakeUpTime = time.Date(now.Year(), now.Month(), now.Day()-1, savedTime.Hour(), savedTime.Minute(), 0, 0, time.UTC).In(jst)
 		}
 	}
 

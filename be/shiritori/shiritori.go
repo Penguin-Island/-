@@ -64,6 +64,28 @@ func getLastChar(str []rune) string {
 	return string(str)
 }
 
+func GetPrefix(word string) string {
+	str := []rune(word)
+	if len(str) == 1 {
+		return ""
+	}
+
+	if isLastLong(str) {
+		return string(trimLong(str))
+	}
+
+	lastChar := getLastChar(str)
+	return string(str[:len(str)-len([]rune(lastChar))])
+}
+
+func GetSuffix(word string) string {
+	str := []rune(word)
+	if isLastLong(str) {
+		return string(getLastVowel(trimLong(str)))
+	}
+	return string(getLastChar(str))
+}
+
 func IsValidShiritori(prev, cur string) bool {
 	p := []rune(prev)
 	c := []rune(cur)

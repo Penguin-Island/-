@@ -51,7 +51,8 @@ type IETick struct {
 	FailingUser     uint
 }
 type IEChangeTurn struct {
-	PrevWord   string
+	PrevPrefix string
+	PrevSuffix string
 	NextUserId uint
 }
 type IESendWord struct {
@@ -222,7 +223,12 @@ func manageGame(app *App, s *GameStates, groupId uint, startTime *time.Time, toH
 					// 2回目以降の失敗
 					turnIndex = (turnIndex + 1) % len(users)
 					turnRemain = 20
-					lastChangeTurnInfo.PrevWord = prevWord
+
+					prefix := shiritori.GetPrefix(prevWord)
+					suffix := shiritori.GetSuffix(prevWord)
+
+					lastChangeTurnInfo.PrevPrefix = prefix
+					lastChangeTurnInfo.PrevSuffix = suffix
 					lastChangeTurnInfo.NextUserId = users[turnIndex]
 					noti.Payload = lastChangeTurnInfo
 					notifyToEveryone(noti, communicators)
@@ -268,7 +274,11 @@ func manageGame(app *App, s *GameStates, groupId uint, startTime *time.Time, toH
 						noti.Payload = IEStart{}
 						notifyToEveryone(noti, communicators)
 
-						lastChangeTurnInfo.PrevWord = prevWord
+						prefix := shiritori.GetPrefix(prevWord)
+						suffix := shiritori.GetSuffix(prevWord)
+
+						lastChangeTurnInfo.PrevPrefix = prefix
+						lastChangeTurnInfo.PrevSuffix = suffix
 						lastChangeTurnInfo.NextUserId = users[turnIndex]
 						noti.Payload = lastChangeTurnInfo
 						notifyToEveryone(noti, communicators)
@@ -318,9 +328,14 @@ func manageGame(app *App, s *GameStates, groupId uint, startTime *time.Time, toH
 				if shiritori.IsValidShiritori(prevWord, payload.Word) {
 					// 成功
 					prevWord = payload.Word
+
+					prefix := shiritori.GetPrefix(payload.Word)
+					suffix := shiritori.GetSuffix(payload.Word)
+
 					turnIndex = (turnIndex + 1) % len(users)
 					turnRemain = 20
-					lastChangeTurnInfo.PrevWord = prevWord
+					lastChangeTurnInfo.PrevPrefix = prefix
+					lastChangeTurnInfo.PrevSuffix = suffix
 					lastChangeTurnInfo.NextUserId = users[turnIndex]
 					noti.Payload = lastChangeTurnInfo
 					notifyToEveryone(noti, communicators)
@@ -334,7 +349,12 @@ func manageGame(app *App, s *GameStates, groupId uint, startTime *time.Time, toH
 						// 2回目以降の失敗 (コンティニューできない)
 						turnIndex = (turnIndex + 1) % len(users)
 						turnRemain = 20
-						lastChangeTurnInfo.PrevWord = prevWord
+
+						prefix := shiritori.GetPrefix(prevWord)
+						suffix := shiritori.GetSuffix(prevWord)
+
+						lastChangeTurnInfo.PrevPrefix = prefix
+						lastChangeTurnInfo.PrevSuffix = suffix
 						lastChangeTurnInfo.NextUserId = users[turnIndex]
 						noti.Payload = lastChangeTurnInfo
 						notifyToEveryone(noti, communicators)
@@ -582,7 +602,8 @@ func handleSocketConnection(app *App, c *gin.Context) {
 				payload := EventPayload{
 					Type: EventTypeOnChangeTurn,
 					Data: map[string]interface{}{
-						"prevAnswer": data.PrevWord,
+						"prevPrefix": data.PrevPrefix,
+						"prevSuffix": data.PrevSuffix,
 						"yourTurn":   data.NextUserId == userId,
 					},
 				}
