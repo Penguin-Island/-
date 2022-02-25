@@ -39,7 +39,12 @@ func recordStat(app *App, userId uint, success bool) error {
 	}
 
 	// キャッシュを更新
-	cacheKey := fmt.Sprintf("nsuccess:%v", userId)
+	var cacheKey string
+	if success {
+		cacheKey = fmt.Sprintf("nsuccess:%v", userId)
+	} else {
+		cacheKey = fmt.Sprintf("nfailure:%v", userId)
+	}
 	if err := app.redis.Get(context.Background(), cacheKey).Err(); err == redis.Nil {
 		if count, err := fetchSuccessCountFromDB(app, userId); err != nil {
 			log.Error(err)
@@ -104,6 +109,7 @@ func getFailureCount(app *App, userId uint) (int, error) {
 	} else if err != nil {
 		return 0, err
 	} else {
+		log.Println(result)
 		return strconv.Atoi(result)
 	}
 }
