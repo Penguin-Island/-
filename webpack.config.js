@@ -69,6 +69,8 @@ module.exports = {
                 {from: 'fe/assets/start.mp3', to: path.join(__dirname, 'dist/assets')},
                 {from: 'fe/assets/alarm.mp3', to: path.join(__dirname, 'dist/assets')},
                 {from: 'fe/assets/favicon.ico', to: path.join(__dirname, 'dist')},
+                {from: 'fe/assets/rule/index.html', to: path.join(__dirname, 'dist/rule')},
+                {from: 'fe/assets/rule/style.css', to: path.join(__dirname, 'dist/rule')},
             ],
         }),
     ],
