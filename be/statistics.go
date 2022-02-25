@@ -129,6 +129,9 @@ func collectStats(stats []Statistics, wakeUpTime, signUpTime, until time.Time, t
 	signUpTime = signUpTime.In(tz)
 	wakeUpTime = wakeUpTime.In(tz)
 
+	log.Println(until)
+	log.Println(wakeUpTime)
+
 	if until.Before(wakeUpTime) {
 		until.Add(-24 * time.Hour)
 	}
