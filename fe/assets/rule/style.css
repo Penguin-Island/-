@@ -1,0 +1,36 @@
+@import url('https://fonts.googleapis.com/css2?family=Yuji+Syuku&display=swap');
+
+html,
+body {
+    margin: 0;
+    padding: 0;
+    font-family: sans-serif;
+}
+
+.container {
+    padding: 10px;
+    max-width: 700px;
+    margin: 0 auto;
+    background-color: #fff2de;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.5);
+}
+
+h1 {
+    margin: 10px 10px 0 -10px;
+    padding: 10px;
+    background-color: #f69200;
+    position: sticky;
+    top: 0;
+    left: 0;
+    border-radius: 0 3px 20px 0;
+    box-shadow: 5px 5px 0 #fcc674;
+    font-family: 'Yuji Syuku', serif;
+}
+
+h2 {
+    display: inline-block;
+    margin-left: -10px;
+    padding: 5px 20px 5px 10px;
+    border-right: solid 7px #df5327;
+    border-bottom: solid 2px #df5327;
+}
