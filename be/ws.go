@@ -31,6 +31,12 @@ const (
 	EventTypeOnInput         = "onInput"
 )
 
+const (
+	SecPerTurn    = 25
+	SecToContinue = 30
+	SecToFinish   = 300
+)
+
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  64,
 	WriteBufferSize: 64,
@@ -168,9 +174,9 @@ func areAllMembersJoined(app *App, users []uint, groupId uint) (bool, error) {
 
 // ゲーム全体の進行を管理する
 func manageGame(app *App, s *GameStates, groupId uint, startTime *time.Time, toHub chan InternalNotification) {
-	remain := 300
-	turnRemain := 20
-	continueRemain := 30
+	remain := SecToFinish
+	turnRemain := SecPerTurn
+	continueRemain := SecToContinue
 	waitingContinue := false
 	users := make([]uint, 0)
 	userFailCount := make(map[uint]int)
@@ -217,12 +223,12 @@ func manageGame(app *App, s *GameStates, groupId uint, startTime *time.Time, toH
 				if userFailCount[users[turnIndex]] < 1 {
 					// 1回目の失敗
 					waitingContinue = true
-					continueRemain = 30
+					continueRemain = SecToContinue
 					userFailCount[users[turnIndex]]++
 				} else {
 					// 2回目以降の失敗
 					turnIndex = (turnIndex + 1) % len(users)
-					turnRemain = 20
+					turnRemain = SecPerTurn
 
 					prefix := shiritori.GetPrefix(prevWord)
 					suffix := shiritori.GetSuffix(prevWord)
@@ -333,7 +339,7 @@ func manageGame(app *App, s *GameStates, groupId uint, startTime *time.Time, toH
 					suffix := shiritori.GetSuffix(payload.Word)
 
 					turnIndex = (turnIndex + 1) % len(users)
-					turnRemain = 20
+					turnRemain = SecPerTurn
 					lastChangeTurnInfo.PrevPrefix = prefix
 					lastChangeTurnInfo.PrevSuffix = suffix
 					lastChangeTurnInfo.NextUserId = users[turnIndex]
@@ -344,11 +350,11 @@ func manageGame(app *App, s *GameStates, groupId uint, startTime *time.Time, toH
 					if userFailCount[noti.EmitterUser] < 1 {
 						// 1回目の失敗 (コンティニューできる)
 						waitingContinue = true
-						continueRemain = 30
+						continueRemain = SecToContinue
 					} else {
 						// 2回目以降の失敗 (コンティニューできない)
 						turnIndex = (turnIndex + 1) % len(users)
-						turnRemain = 20
+						turnRemain = SecPerTurn
 
 						prefix := shiritori.GetPrefix(prevWord)
 						suffix := shiritori.GetSuffix(prevWord)
