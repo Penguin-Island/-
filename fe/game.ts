@@ -248,7 +248,7 @@ addEventListener('load', () => {
                     seAlarm.pause();
                     setTimeout(() => {
                         location.href = '/finish/';
-                    }, 3000);
+                    }, 1500);
 
                     document.getElementById('failureOverlay').setAttribute('data-activated', 'no');
                     document.getElementById('finishOverlay').setAttribute('data-activated', 'yes');
