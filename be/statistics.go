@@ -3,9 +3,11 @@ package be
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"strconv"
 	"time"
 
+	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/go-redis/redis/v8"
 	log "github.com/sirupsen/logrus"
@@ -178,4 +180,23 @@ func collectStats(stats []Statistics, wakeUpTime, signUpTime, until time.Time, t
 }
 
 func handleGetWeeklyStats(app *App, c *gin.Context) {
+	sess := sessions.Default(c)
+	iUserId := sess.Get("user_id")
+	if iUserId == nil {
+		c.AbortWithStatus(http.StatusUnauthorized)
+		return
+	} else if _, ok := iUserId.(uint); !ok {
+		c.AbortWithStatus(http.StatusInternalServerError)
+		return
+	}
+	userId := iUserId.(uint)
+
+	jst, err := time.LoadLocation("Asia/Tokyo")
+	if err != nil {
+		log.Error(err)
+		c.AbortWithStatus(http.StatusInternalServerError)
+	}
+
+	_ = userId
+	_ = jst
 }
