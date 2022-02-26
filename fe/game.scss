@@ -398,6 +398,7 @@ body {
                 padding: 3px 10px;
                 cursor: pointer;
                 transition: background-color $animation-duration;
+                color: black;
 
                 &:hover {
                     background-color: lighten($background-color, 10%);
@@ -507,6 +508,7 @@ body {
                     padding: 3px 10px;
                     transition: background-color $animation-duration;
                     cursor: pointer;
+                    color: black;
 
                     &:hover {
                         background-color: lighten($background-color, 10%);
@@ -530,6 +532,7 @@ body {
             padding: 3px 10px;
             cursor: pointer;
             transition: background-color $animation-duration;
+            color: black;
 
             &:hover {
                 background-color: lighten($background-color, 10%);
