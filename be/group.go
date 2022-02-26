@@ -1,7 +1,6 @@
 package be
 
 import (
-	"errors"
 	"fmt"
 	"net/http"
 	"strconv"
@@ -170,17 +169,6 @@ func handleJoin(app *App, c *gin.Context) {
 			log.Error(err)
 			c.AbortWithStatus(http.StatusNotAcceptable)
 			return err
-		}
-
-		var count int64
-		if err := tx.Model(&Member{}).Where("group_id = ?", invitation.GroupId).Count(&count).Error; err != nil {
-			log.Error(err)
-			c.AbortWithStatus(http.StatusInternalServerError)
-			return err
-		}
-		if count > 1 {
-			c.AbortWithStatus(http.StatusNotAcceptable)
-			return errors.New("too many members")
 		}
 
 		user.GroupId = invitation.GroupId
