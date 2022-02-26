@@ -1,6 +1,7 @@
 package be
 
 import (
+	"database/sql"
 	"fmt"
 	"io"
 	"math/rand"
@@ -11,10 +12,9 @@ import (
 	"time"
 
 	"github.com/gin-contrib/sessions"
-	redisSess "github.com/gin-contrib/sessions/redis"
+	pgSess "github.com/gin-contrib/sessions/postgres"
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
-	"github.com/go-redis/redis/v8"
 	"github.com/joho/godotenv"
 	log "github.com/sirupsen/logrus"
 	"gorm.io/driver/postgres"
@@ -32,15 +32,6 @@ type Member struct {
 type App struct {
 	db         *gorm.DB
 	gameStates GameStates
-	redis      *redis.Client
-}
-
-func getRedisURL() (*url.URL, error) {
-	url, err := url.Parse(os.Getenv("REDIS_URL"))
-	if err != nil {
-		return nil, err
-	}
-	return url, nil
 }
 
 func NewApp() *App {
@@ -150,17 +141,6 @@ func Run() {
 	}
 	app.db = db
 
-	redisUrl, err := url.Parse(os.Getenv("REDIS_URL"))
-	if err != nil {
-		log.Fatal(err)
-	}
-	redisPassword, _ := redisUrl.User.Password()
-
-	app.redis = redis.NewClient(&redis.Options{
-		Addr:     redisUrl.Host,
-		Password: redisPassword,
-	})
-
 	rand.Seed(time.Now().Unix())
 
 	r := gin.Default()
@@ -213,11 +193,14 @@ func Run() {
 		c.Abort()
 	})
 
-	store, err := redisSess.NewStore(10, "tcp", redisUrl.Host, redisPassword, []byte(os.Getenv("SESSION_SECRET")))
+	sessDB, err := sql.Open("postgres", os.Getenv("DATABASE_URL"))
 	if err != nil {
 		log.Fatal(err)
 	}
-	redisSess.SetKeyPrefix(store, "session:")
+	store, err := pgSess.NewStore(sessDB, []byte(os.Getenv("SESSION_SECRET")))
+	if err != nil {
+		log.Fatal(err)
+	}
 	r.Use(sessions.Sessions("session", store))
 
 	if isFlagEnabled(os.Args[1:], "noproxy") {

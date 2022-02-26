@@ -400,10 +400,6 @@ func manageGame(app *App, s *GameStates, groupId uint, startTime *time.Time, toH
 	// 成功
 
 deleteCommunicator:
-	for _, u := range users {
-		invalidateStatCache(app, u)
-	}
-
 	log.Info("Deleting communicator")
 
 	for _, c := range communicators {

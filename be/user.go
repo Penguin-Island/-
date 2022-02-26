@@ -1,7 +1,6 @@
 package be
 
 import (
-	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -9,7 +8,6 @@ import (
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"github.com/go-redis/redis/v8"
 	log "github.com/sirupsen/logrus"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -280,16 +278,6 @@ func handleGetStatistics(app *App, c *gin.Context) {
 	}
 	userId := iUserId.(uint)
 
-	cacheKey := fmt.Sprintf("stat:%v", userId)
-
-	if result, err := app.redis.Get(context.Background(), cacheKey).Result(); err != nil && err != redis.Nil {
-		log.Error(err)
-	} else if err == nil {
-		c.Header("Content-Type", "application/json; charset=utf-8")
-		c.Writer.WriteString(result)
-		return
-	}
-
 	jst, err := time.LoadLocation("Asia/Tokyo")
 	if err != nil {
 		log.Error(err)
@@ -349,10 +337,6 @@ func handleGetStatistics(app *App, c *gin.Context) {
 		log.Error(err)
 		c.AbortWithStatus(http.StatusInternalServerError)
 		return
-	}
-
-	if err := app.redis.Set(context.Background(), cacheKey, string(jsonData), 24*time.Hour).Err(); err != nil {
-		log.Error(err)
 	}
 
 	c.Header("Content-Type", "application/json; charset=utf-8")

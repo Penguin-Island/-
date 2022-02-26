@@ -1,13 +1,8 @@
 package be
 
 import (
-	"context"
-	"fmt"
-	"strconv"
 	"time"
 
-	"github.com/go-redis/redis/v8"
-	log "github.com/sirupsen/logrus"
 	"gorm.io/gorm"
 )
 
@@ -38,80 +33,25 @@ func recordStat(app *App, userId uint, success bool) error {
 		return err
 	}
 
-	// キャッシュを更新
-	var cacheKey string
-	if success {
-		cacheKey = fmt.Sprintf("nsuccess:%v", userId)
-	} else {
-		cacheKey = fmt.Sprintf("nfailure:%v", userId)
-	}
-	if err := app.redis.Get(context.Background(), cacheKey).Err(); err == redis.Nil {
-		if count, err := fetchSuccessCountFromDB(app, userId); err != nil {
-			log.Error(err)
-		} else {
-			if err := app.redis.Set(context.Background(), cacheKey, count, 240*time.Hour).Err(); err != nil {
-				log.Error(err)
-			}
-		}
-	} else if err != nil {
-		log.Error(err)
-	} else {
-		if err := app.redis.Incr(context.Background(), cacheKey).Err(); err != nil {
-			log.Error(err)
-		}
-	}
-
 	return nil
 }
 
-func invalidateStatCache(app *App, userId uint) {
-	statCacheKey := fmt.Sprintf("stat:%v", userId)
-	if err := app.redis.Del(context.Background(), statCacheKey).Err(); err != nil && err != redis.Nil {
-		log.Error(err)
-	}
-}
-
 func getSuccessCount(app *App, userId uint) (int, error) {
-	cacheKey := fmt.Sprintf("nsuccess:%v", userId)
-
-	if result, err := app.redis.Get(context.Background(), cacheKey).Result(); err == redis.Nil {
-		count, err := fetchSuccessCountFromDB(app, userId)
-		if err != nil {
-			return 0, err
-		}
-
-		if err := app.redis.Set(context.Background(), cacheKey, count, 240*time.Hour).Err(); err != nil {
-			log.Error(err)
-		}
-
-		return count, nil
-	} else if err != nil {
+	count, err := fetchSuccessCountFromDB(app, userId)
+	if err != nil {
 		return 0, err
-	} else {
-		return strconv.Atoi(result)
 	}
+
+	return count, nil
 }
 
 func getFailureCount(app *App, userId uint) (int, error) {
-	cacheKey := fmt.Sprintf("nfailure:%v", userId)
-
-	if result, err := app.redis.Get(context.Background(), cacheKey).Result(); err == redis.Nil {
-		count, err := fetchFailureCountFromDB(app, userId)
-		if err != nil {
-			return 0, err
-		}
-
-		if err := app.redis.Set(context.Background(), cacheKey, count, 240*time.Hour).Err(); err != nil {
-			log.Error(err)
-		}
-
-		return count, nil
-	} else if err != nil {
+	count, err := fetchFailureCountFromDB(app, userId)
+	if err != nil {
 		return 0, err
-	} else {
-		log.Println(result)
-		return strconv.Atoi(result)
 	}
+
+	return count, nil
 }
 
 func durationDays(from, to time.Time) int {
