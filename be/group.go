@@ -20,7 +20,7 @@ type Group struct {
 type Invitation struct {
 	gorm.Model
 	Inviter uint
-	Invitee uint
+	Invitee uint `gorm:"index"`
 	GroupId uint
 }
 

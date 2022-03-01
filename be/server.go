@@ -26,7 +26,7 @@ type Member struct {
 	gorm.Model
 	UserName string `gorm:"unique"`
 	Password string
-	GroupId  uint
+	GroupId  uint `gorm:"index"`
 }
 
 type App struct {
